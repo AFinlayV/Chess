@@ -9,10 +9,10 @@ USERNAME = 'AlexTheFifth'
 FILENAME = 'lichess_{}.pgn'.format(USERNAME)
 VERBOSE = False
 
-#load lichess data from lichess.org
+
 def load_user_data(name):
     '''
-    load user data
+    load user data for USERNAME
     '''
     print('Loading user data for {}...'.format(USERNAME))
     user = lichess.api.user(name)
@@ -22,7 +22,7 @@ def load_user_data(name):
 
 def save_game_data(file):
     '''
-    Save game data
+    Save game data to FILENAME
     '''
     loadnew = input('Download all games from lichess? (y/n)')
     if loadnew == 'y' or loadnew == 'Y':
@@ -41,10 +41,11 @@ def load_game_data(file):
     '''
     load game data from FILENAME and return pandas DataFrame object
     '''
-    print('Reading data from {}'.format(FILENAME), end = '')
+    print('Reading data from {}'.format(FILENAME))
     pgn = open(file)
     result = {}
     i = 0
+    print('Creating DataFrame from file: {}'.format(FILENAME))
     while True:
         i += 1
         game = chess.pgn.read_game(pgn)
