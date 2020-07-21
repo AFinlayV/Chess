@@ -14,26 +14,35 @@ def load_user_data(name):
     '''
     load user data
     '''
-    print('Loading user data...')
+    print('Loading user data for {}...'.format(USERNAME))
     user = lichess.api.user(name)
-    user_data = user['perfs']
-    print(user_data)
+    user_data = user
+    return user_data
 
 
 def save_game_data(file):
     '''
-    load game data
+    Save game data
     '''
-    print('Loading game data... (this might take a while)')
-    pgn = lichess.api.user_games(USERNAME, format=SINGLE_PGN)
-    with open(FILENAME, 'w') as f:
-        print('.', end = '')
-        f.write(pgn)
+    loadnew = input('Download all games from lichess? (y/n)')
+    if loadnew == 'y' or loadnew == 'Y':
+        print('Loading game data for {}... (this might take a while)'.format(USERNAME))
+        pgn = lichess.api.user_games(USERNAME, format=SINGLE_PGN)
+        with open(FILENAME, 'w') as f:
+            f.write(pgn)
+        print('data saved as: {}'.format(FILENAME))
+    else:
+        print('New games not downloaded for user {}'.format(USERNAME))
 
 
 
-def load_game_data():
-    pgn = open(FILENAME)
+
+def load_game_data(file):
+    '''
+    load game data from FILENAME and return pandas DataFrame object
+    '''
+    print('Reading data from {}'.format(FILENAME), end = '')
+    pgn = open(file)
     result = {}
     i = 0
     while True:
@@ -47,17 +56,25 @@ def load_game_data():
 
         result["Game{}".format(i)] = headers
 
-    verbose(result)
+    verbose('Raw Data', result)
 
     df = pd.DataFrame.from_dict(data = result).transpose()
-    verbose(df)
+    verbose('Formatted data', df)
     return df
 
 def verbose(message, data):
-    delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
-    print(delimiter, message, delimiter, data)
+    '''
+    print data when in verbose mode
+    '''
+    if VERBOSE:
+        delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+        print(delimiter, message, delimiter, data)
+    else:
+        print('[Use verbose mode to see {}]'.format(message))
 
-def main():
+def run():
     load_user_data(USERNAME)
     save_game_data(FILENAME)
     game_data = load_game_data(FILENAME)
+
+run()
