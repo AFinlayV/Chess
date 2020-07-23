@@ -124,7 +124,7 @@ def stats(user, games):
     df = pd.DataFrame(columns = col)
     eco_count = {}
     #print(games)
-    
+
     for game in games.iterrows():
         eco = game[1]['ECO']
         if eco not in eco_count:
