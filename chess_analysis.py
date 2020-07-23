@@ -114,12 +114,27 @@ def stats(user, games):
     display stats for USERNAME
 
     todo:
-    - count number of occorances of each ECO
+    *- count number of occorances of each ECO
     - calculate win or loss using USERNAME, White, Black, and Result
     - calculate W/L percentage for each ECO as white and black seperately
     -
 
     '''
+
+    df = pd.DataFrame(columns = col)
+    eco_count = {}
+    #print(games)
+    
+    for game in games.iterrows():
+        eco = game[1]['ECO']
+        if eco not in eco_count:
+            eco_count[eco] = 1
+        elif eco in eco_count:
+            eco_count[eco] = eco_count[eco] + 1
+        else:
+            print('error?')
+
+    print(eco_count)
 
     print(user[USER_DATA])
     print(games[GAME_DATA])
