@@ -4,30 +4,73 @@ import chess.pgn
 from stockfish import Stockfish as sf
 import lichess.api
 from lichess.format import SINGLE_PGN
+import json
 
 USERNAME = 'AlexTheFifth'
 FILENAME = 'lichess_{}.pgn'.format(USERNAME)
 VERBOSE = False
+NUM_GAMES = 2000
 
+
+# data types
+USER_DATA = [
+    'username',
+    'count.all',
+    'count.win',
+    'count.loss',
+    'perfs.blitz.rating',
+    'perfs.bullet.rating',
+    'perfs.correspondence.rating',
+    'perfs.classical.rating',
+    'perfs.rapid.rating'
+    ]
+
+GAME_DATA = [
+    'ECO',
+    'Date',
+    'Result',
+    'Moves'
+    ]
+TYPE_DICT = {
+    'Event'             : 'string',
+    'Site'              : 'string',
+    'Date'              : 'datetime64',
+    'Round'             : 'string',
+    'White'             : 'string',
+    'Black'             : 'string',
+    'Result'            : 'string',
+    'BlackElo'          : 'int16',
+    'BlackRatingDiff'   : 'int16',
+    'ECO'               : 'category',
+    'Termination'       : 'string',
+    'TimeControl'       : 'string',
+    'UTCDate'           : 'datetime64',
+    'UTCTime'           : 'datetime64',
+    'Variant'           : 'string',
+    'WhiteElo'          : 'int16',
+    'WhiteRatingDiff'   : 'int16',
+    'Moves'             : 'string'
+    }
 
 def load_user_data(name):
     '''
     load user data for USERNAME
     '''
     print('Loading user data for {}...'.format(USERNAME))
-    user = lichess.api.user(name)
-    user_data = user
-    return user_data
+    user_raw = json.dumps(lichess.api.user(name))
+    user_json = json.loads(user_raw)
+    user = pd.json_normalize(user_json)
+    return user
 
 
 def save_game_data(file):
     '''
     Save game data to FILENAME
     '''
-    loadnew = input('Download all games from lichess? (y/n)')
+    loadnew = input('Download {} games from lichess? (y/n) '.format(NUM_GAMES))
     if loadnew == 'y' or loadnew == 'Y':
-        print('Loading game data for {}... (this might take a while)'.format(USERNAME))
-        pgn = lichess.api.user_games(USERNAME, format=SINGLE_PGN)
+        print('Loading {} games for {}... (this might take a while)'.format(NUM_GAMES, USERNAME))
+        pgn = lichess.api.user_games(USERNAME, max = NUM_GAMES, format=SINGLE_PGN)
         with open(FILENAME, 'w') as f:
             f.write(pgn)
         print('data saved as: {}'.format(FILENAME))
@@ -49,6 +92,7 @@ def load_game_data(file):
     while True:
         i += 1
         game = chess.pgn.read_game(pgn)
+        verbose('Loading game number {}'.format(i), game)
         if game is None:
             break
 
@@ -58,24 +102,29 @@ def load_game_data(file):
         result["Game{}".format(i)] = headers
 
     verbose('Raw Data', result)
-
-    df = pd.DataFrame.from_dict(data = result).transpose()
+    df = pd.DataFrame.from_dict(data = result).transpose().astype(TYPE_DICT, errors = 'ignore')
     verbose('Formatted data', df)
     return df
+
+def stats(user, games):
+    print(user[USER_DATA])
+    print(games[GAME_DATA])
+
 
 def verbose(message, data):
     '''
     print data when in verbose mode
     '''
+    delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
     if VERBOSE:
-        delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
         print(delimiter, message, delimiter, data)
     else:
-        print('[Use verbose mode to see {}]'.format(message))
+        print('[{}]'.format(message))
 
 def run():
-    load_user_data(USERNAME)
+    user = load_user_data(USERNAME)
     save_game_data(FILENAME)
-    game_data = load_game_data(FILENAME)
+    games = load_game_data(FILENAME)
+    stats(user, games)
 
 run()
