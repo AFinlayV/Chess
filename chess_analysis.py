@@ -9,7 +9,7 @@ import json
 USERNAME = 'AlexTheFifth'
 FILENAME = 'lichess_{}.pgn'.format(USERNAME)
 VERBOSE = False
-NUM_GAMES = 2000
+NUM_GAMES = 100
 
 
 # data types
@@ -28,9 +28,12 @@ USER_DATA = [
 GAME_DATA = [
     'ECO',
     'Date',
+    'White',
+    'Black',
     'Result',
     'Moves'
     ]
+
 TYPE_DICT = {
     'Event'             : 'string',
     'Site'              : 'string',
@@ -99,7 +102,7 @@ def load_game_data(file):
         headers = dict(game.headers)
         headers["Moves"] = game.board().variation_san(game.mainline_moves())
 
-        result["Game{}".format(i)] = headers
+        result["{}".format(i)] = headers
 
     verbose('Raw Data', result)
     df = pd.DataFrame.from_dict(data = result).transpose().astype(TYPE_DICT, errors = 'ignore')
@@ -107,6 +110,17 @@ def load_game_data(file):
     return df
 
 def stats(user, games):
+    '''
+    display stats for USERNAME
+
+    todo:
+    - count number of occorances of each ECO
+    - calculate win or loss using USERNAME, White, Black, and Result
+    - calculate W/L percentage for each ECO as white and black seperately
+    -
+
+    '''
+
     print(user[USER_DATA])
     print(games[GAME_DATA])
 
