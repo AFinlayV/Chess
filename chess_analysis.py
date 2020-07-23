@@ -120,7 +120,7 @@ def stats(user, games):
     -
 
     '''
-     col = ['ECO',
+    col = ['ECO',
            'ECO_count',
            'wins_white',
            'wins_black',
@@ -128,7 +128,7 @@ def stats(user, games):
            'loss_black',
            'win_loss_white',
            'win_loss_black']
-    
+
     df = pd.DataFrame(columns = col)
     eco_count = {}
     #print(games)
