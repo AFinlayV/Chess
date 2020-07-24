@@ -1,4 +1,3 @@
-# write a program to analyse my chess games
 import pandas as pd
 import chess.pgn
 from stockfish import Stockfish as sf
@@ -6,13 +5,27 @@ import lichess.api
 from lichess.format import SINGLE_PGN
 import json
 
+'''
+This program takes the username from lichess.org and returns:
+
+- user metadata
+- a top ten list of that user's best and worst ECO opening codes for both white and black.
+
+Ideas for future features:
+
+- game analysis to figure out where user went wrong on an opening using pychess or stockfish
+- make it faster?
+- dislay openings from ECO codes
+'''
+
+# Define global variables
 USERNAME = 'AlexTheFifth'
 FILENAME = 'lichess_{}.pgn'.format(USERNAME)
 VERBOSE = False
-NUM_GAMES = 100
+NUM_GAMES = ''
+delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
-
-# data types
+# data types and lists for columns
 USER_DATA = [
     'username',
     'count.all',
@@ -55,17 +68,30 @@ TYPE_DICT = {
     'Moves'             : 'string'
     }
 
+col = [
+    'eco_count',
+    'wins_white',
+    'wins_black',
+    'loss_white',
+    'loss_black',
+    'draws_black',
+    'draws_white',
+    'win_loss_white',
+    'win_loss_black'
+    ]
+
 def load_user_data(name):
 
     '''
     load user data for USERNAME
+    Returns Series of data for USERNAME
     '''
 
     print('Loading user data for {}...'.format(USERNAME))
     user_raw = json.dumps(lichess.api.user(name))
     user_json = json.loads(user_raw)
     user = pd.json_normalize(user_json)
-    print(user.iloc(0)[0])
+    verbose('User Data', user.iloc(0)[0])
     return user
 
 
@@ -92,6 +118,8 @@ def load_game_data(file):
 
     '''
     load game data from FILENAME and return pandas DataFrame object
+
+    Returns DataFrame
     '''
 
     print('Reading data from {}'.format(FILENAME))
@@ -99,6 +127,7 @@ def load_game_data(file):
     result = {}
     i = 0
     print('Creating DataFrame from file: {}'.format(FILENAME))
+    # format PGN data as dict
     while True:
         i += 1
         game = chess.pgn.read_game(pgn)
@@ -122,6 +151,8 @@ def normalize(user, games):
     generate a list of lists with ECO, Result, and both usernames for each game
     generate a list of unique eco_lst
 
+    Returns list of lists for game data (game_lst), list of ECO codes (eco_lst)
+
     '''
 
     game_lst = []
@@ -139,82 +170,72 @@ def normalize(user, games):
     return game_lst, eco_lst
 
 def analyse(game_stats, eco_lst):
+    '''
+     generate a dataframe that contains:
+     -count for each eco
+     -W/L/D counts for each ECO for both black and WhiteElo
+     - win percentages for each ECO as black and white
+
+     Returns DataFrame
 
     '''
-    figure out a way to combine:
 
-    the list of unique ECO codes (eco_lst)
-    the list of game results (game_stats)
+    # generate dataframe from normalized data index and columns
 
-    to generate
+    df = pd.DataFrame(0, index = eco_lst, columns = col)
 
-    a dataframe with the following information on each row:
-    {
-    'ECO':'',
-    'eco_count': 0,
-    'wins_white': 0,
-    'wins_black': 0,
-    'loss_white': 0,
-    'loss_black': 0,
-    'draws_black': 0,
-    'draws_white': 0,
-    'win_loss_white': 0.0,
-    'win_loss_black': 0.0
-    }
-
-    by (maybe) refactoring this code:
-
-
-    # if white_un == USERNAME and result == '1-0':
-    #     counts[eco]['wins_white'] = counts[eco]['wins_white'] + 1
-    # elif white_un == USERNAME and result == '0-1':
-    #     counts[eco]['loss_white'] = counts[eco]['loss_white'] + 1
-    # elif white_un == USERNAME and result == '1/2-1/2':
-    #     counts[eco]['draws_white'] = counts[eco]['draws_white'] + 1
-    # elif black_un == USERNAME and result == '0-1':
-    #     counts[eco]['wins_black'] = counts[eco]['wins_black'] + 1
-    # elif black_un == USERNAME and result == '1-0':
-    #     counts[eco]['loss_black'] = counts[eco]['loss_black'] + 1
-    # elif black_un == USERNAME and result == '1/2-1/2':
-    #     counts[eco]['draws_black'] = counts[eco]['draws_black'] + 1
-    # else:
-    #     print('error?')
-
-
-    # try:
-    #     counts[eco]['win_loss_white'] = counts[eco]['wins_white'] / counts[eco]['loss_white']
-    #     counts[eco]['win_loss_black'] = counts[eco]['wins_black'] / counts[eco]['loss_black']
-    # except:continue
-
-    '''
-    # display normalized data
+    #populate DataFrame
     for game in game_stats:
-        print(game)
-    print(eco_lst)
+        eco = game[0]
+        result = game[1]
+        white = game[2]
+        black = game[3]
 
-    # generate dataframe from normalized data
-    col = [
-        'eco_count',
-        'wins_white',
-        'wins_black',
-        'loss_white',
-        'loss_black',
-        'draws_black',
-        'draws_white',
-        'win_loss_white',
-        'win_loss_black'
-        ]
-    df = pd.DataFrame(index = eco_lst, columns = col)
-    print(df)
+        df.at[eco, 'eco_count'] += 1
+        if white == USERNAME:
+            if result == '1-0':
+                df.at[eco, 'wins_white'] += 1
+            elif result == '0-1':
+                df.at[eco, 'loss_white'] += 1
+            elif result == '1/2-1/2':
+                df.at[eco, 'draws_white'] += 1
+            else:
+                print('error?')
+        elif black == USERNAME:
+            if result == '1-0':
+                df.at[eco, 'loss_black'] += 1
+            elif result == '0-1':
+                df.at[eco, 'wins_black'] += 1
+            elif result == '1/2-1/2':
+                df.at[eco, 'draws_black'] += 1
+            else:
+                print('error?')
+    # calculate win/loss percentages for each ECO code
+    df['win_loss_white'] = (df['wins_white'] / (df['loss_white'] + df['wins_white'])) * 100
+    df['win_loss_black'] = (df['wins_black'] / (df['loss_black'] + df['wins_black'])) * 100
+
+    return df
 
 
+def top_ten(df):
+    '''
+    display the top ten best and worst openings for USERNAME for both black and white
 
+    '''
+    pd.options.display.float_format = '{:.2f}%'.format
+    print(delimiter,'Top 10 best games for white:', delimiter,
+        df[df['eco_count'] > 25].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
+    print(delimiter,'Top 10 best games for black:', delimiter,
+        df[df['eco_count'] > 25].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
+    print(delimiter,'Top 10 worst games for white:', delimiter,
+        df[df['eco_count'] > 25].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
+    print(delimiter,'Top 10 worst games for black:', delimiter,
+        df[df['eco_count'] > 25].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
 
 def verbose(message, data):
     '''
     print data when in verbose mode
     '''
-    delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
     if VERBOSE:
         print(delimiter, message, delimiter, data)
     else:
@@ -225,6 +246,7 @@ def run():
     user = load_user_data(USERNAME)
     games = load_game_data(FILENAME)
     game_stats, eco_lst = normalize(user, games)
-    analyse(game_stats, eco_lst)
+    df = analyse(game_stats, eco_lst)
+    top_ten(df)
 
 run()
