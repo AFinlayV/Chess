@@ -1,4 +1,44 @@
 [Event "Rated Bullet game"]
+[Site "https://lichess.org/y25JUzh0"]
+[Date "2020.07.24"]
+[White "chekalov"]
+[Black "AlexTheFifth"]
+[Result "1-0"]
+[UTCDate "2020.07.24"]
+[UTCTime "18:22:17"]
+[WhiteElo "1183"]
+[BlackElo "1220"]
+[WhiteRatingDiff "+6"]
+[BlackRatingDiff "-7"]
+[Variant "Standard"]
+[TimeControl "120+1"]
+[ECO "B20"]
+[Termination "Time forfeit"]
+
+1. e4 c5 2. Bc4 e6 3. Nc3 Nc6 4. Nf3 a6 5. d4 b5 6. Be2 cxd4 7. Nxd4 Bc5 8. Nxc6 Qf6 9. Na5 Qxf2+ 10. Kd2 Qe3+ 11. Ke1 Qf2+ 12. Kd2 Be3+ 13. Kd3 Nf6 14. Bxe3 Qh4 15. Qe1 Qxe1 16. Raxe1 Bb7 17. Rhf1 O-O-O 18. Nxb7 Kxb7 19. Bf3 d5 20. exd5 exd5 21. Rd1 Kc8 22. Ke2 d4 23. Bxd4 Rhe8+ 24. Kf2 Nd5 25. Nxd5 Rxd5 26. Bxg7 Rxd1 27. Rxd1 Rg8 28. Bc3 1-0
+
+
+[Event "Rated Bullet game"]
+[Site "https://lichess.org/bMr3pJVV"]
+[Date "2020.07.24"]
+[White "AlexTheFifth"]
+[Black "espbjo20"]
+[Result "0-1"]
+[UTCDate "2020.07.24"]
+[UTCTime "12:15:17"]
+[WhiteElo "1225"]
+[BlackElo "1228"]
+[WhiteRatingDiff "-5"]
+[BlackRatingDiff "+6"]
+[Variant "Standard"]
+[TimeControl "120+1"]
+[ECO "B02"]
+[Termination "Normal"]
+
+1. e4 Nf6 2. e5 Nd5 3. c4 Nb6 4. Nc3 d6 5. Nf3 Nc6 6. d4 dxe5 7. d5 Nd4 8. Nxd4 exd4 9. Qxd4 e6 10. Bf4 exd5 11. cxd5 c6 12. O-O-O cxd5 13. Nxd5 Nxd5 14. Qa4+ Bd7 15. Qe4+ Ne7 16. Bb5 Bxb5 17. Rxd8+ Rxd8 18. Rd1 Rxd1+ 19. Kxd1 g6 20. Qxb7 Bc6 21. Qxa7 f5 22. Bd6 h5 23. Qb8+ Kf7 24. Bxe7 Bxe7 25. Qxh8 Bxg2 26. Qh7+ Kf6 27. Qh8+ Kf7 28. Qc8 Kf6 29. Qc6+ Kf7 30. a4 Bxc6 0-1
+
+
+[Event "Rated Bullet game"]
 [Site "https://lichess.org/o5UYYcRW"]
 [Date "2020.07.23"]
 [White "aroncea"]
@@ -1956,45 +1996,5 @@
 [Termination "Time forfeit"]
 
 1. d4 d5 2. Bf4 Nc6 3. Nc3 f6 4. Nb5 e5 5. dxe5 fxe5 6. Bg3 Nf6 7. Nf3 Bd6 8. Nxd6+ Qxd6 9. e3 O-O 10. Bb5 Bg4 11. Bxc6 bxc6 12. h3 Bxf3 13. Qxf3 e4 14. Qf4 Qxf4 15. Bxf4 Nh5 16. Bxc7 Rac8 17. Bd6 Rf6 18. Be7 Re6 19. Bh4 h6 20. g4 Nf6 21. Bxf6 Rxf6 22. O-O g5 23. Kg2 Rcf8 24. Rad1 a5 25. a3 Rb8 26. Rb1 c5 27. c3 d4 28. cxd4 cxd4 29. exd4 Rd6 30. Rfd1 Rb3 31. d5 e3 32. fxe3 Rxe3 33. Rbc1 Re5 34. Rc5 a4 35. Rc8+ Kf7 36. Rc7+ Kf6 37. Rc5 Ke7 38. Kf3 Kd7 39. Rd3 Ke7 40. Rd2 Rf6+ 41. Kg3 Re3+ 42. Kg2 Kd6 43. Ra5 Rff3 44. Rxa4 Rg3+ 45. Kf2 Rxh3 46. Ra6+ Ke5 0-1
-
-
-[Event "Rated Bullet game"]
-[Site "https://lichess.org/hielMMa3"]
-[Date "2020.05.10"]
-[White "AlexTheFifth"]
-[Black "firechao"]
-[Result "1-0"]
-[UTCDate "2020.05.10"]
-[UTCTime "12:57:28"]
-[WhiteElo "1189"]
-[BlackElo "1098"]
-[WhiteRatingDiff "+4"]
-[BlackRatingDiff "-6"]
-[Variant "Standard"]
-[TimeControl "120+1"]
-[ECO "C34"]
-[Termination "Normal"]
-
-1. e4 e5 2. f4 Nc6 3. Nf3 exf4 4. d4 Qe7 5. Nc3 d5 6. Bd3 dxe4 7. Bxe4 Bg4 8. O-O O-O-O 9. Bxf4 Nxd4 10. Qxd4 Rxd4 11. Nxd4 Nf6 12. Rae1 Nxe4 13. Nxe4 Qb4 14. c3 Qxb2 15. Rf2 Qb6 16. Be3 Bc5 17. Rxf7 Bxd4 18. Bxd4 Qc6 19. Rxg7 Bf5 20. Rg5 Bg6 21. Nf6 1-0
-
-
-[Event "Rated Bullet game"]
-[Site "https://lichess.org/SpxBD81d"]
-[Date "2020.05.06"]
-[White "kof1"]
-[Black "AlexTheFifth"]
-[Result "0-1"]
-[UTCDate "2020.05.06"]
-[UTCTime "18:18:08"]
-[WhiteElo "1130"]
-[BlackElo "1184"]
-[WhiteRatingDiff "-5"]
-[BlackRatingDiff "+5"]
-[Variant "Standard"]
-[TimeControl "120+1"]
-[ECO "A00"]
-[Termination "Normal"]
-
-1. f3 e5 2. Kf2 c6 3. e3 Qb6 4. Ne2 d5 5. c3 Nf6 6. d4 e4 7. b4 Bd6 8. a4 Qc7 9. Nd2 Bxh2 10. g3 exf3 11. Rxh2 fxe2 12. Qxe2 Ng4+ 13. Ke1 Qxg3+ 14. Kd1 Nxh2 15. e4 Bg4 16. Nf3 Bxf3 17. Qxf3 Qxf3+ 18. Be2 Qxc3 19. Ra3 Qxd4+ 20. Rd3 Qxb4 21. exd5 Qxa4+ 22. Ke1 Qa5+ 23. Bd2 Qa1+ 24. Bd1 Qe5+ 25. Re3 Qxe3+ 26. Bxe3 cxd5 27. Ba4+ Nc6 28. Bc5 O-O-O 29. Bxc6 bxc6 30. Bxa7 d4 31. Bc5 d3 32. Kd2 Nf3+ 33. Ke3 Ne5 34. Bd4 Rhe8 35. Bxe5 Rxe5+ 36. Kd2 Re2+ 37. Kd1 f5 38. Kc1 f4 39. Kd1 f3 40. Kc1 f2 41. Kd1 f1=Q# 0-1
 
 

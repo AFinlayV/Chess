@@ -187,11 +187,28 @@ def analyse(game_stats, eco_lst):
     # except:continue
 
     '''
-
-
+    # display normalized data
     for game in game_stats:
         print(game)
     print(eco_lst)
+
+    # generate dataframe from normalized data
+    col = [
+        'ECO',
+        'eco_count',
+        'wins_white',
+        'wins_black',
+        'loss_white',
+        'loss_black',
+        'draws_black',
+        'draws_white',
+        'win_loss_white',
+        'win_loss_black'
+        ]
+    df = pd.DataFrame(index = eco_lst, columns = col)
+    print(df)
+
+
 
 
 def verbose(message, data):
