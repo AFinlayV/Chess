@@ -56,20 +56,25 @@ TYPE_DICT = {
     }
 
 def load_user_data(name):
+
     '''
     load user data for USERNAME
     '''
+
     print('Loading user data for {}...'.format(USERNAME))
     user_raw = json.dumps(lichess.api.user(name))
     user_json = json.loads(user_raw)
     user = pd.json_normalize(user_json)
+    print(user.iloc(0)[0])
     return user
 
 
 def save_game_data(file):
+
     '''
     Save game data to FILENAME
     '''
+
     loadnew = input('Download {} games from lichess? (y/n) '.format(NUM_GAMES))
     if loadnew == 'y' or loadnew == 'Y':
         print('Loading {} games for {}... (this might take a while)'.format(NUM_GAMES, USERNAME))
@@ -84,9 +89,11 @@ def save_game_data(file):
 
 
 def load_game_data(file):
+
     '''
     load game data from FILENAME and return pandas DataFrame object
     '''
+
     print('Reading data from {}'.format(FILENAME))
     pgn = open(file)
     result = {}
@@ -95,7 +102,7 @@ def load_game_data(file):
     while True:
         i += 1
         game = chess.pgn.read_game(pgn)
-        verbose('Loading game number {}'.format(i), game)
+        #verbose('Loading game number {}'.format(i), game)
         if game is None:
             break
 
@@ -109,13 +116,13 @@ def load_game_data(file):
     verbose('Formatted data', df)
     return df
 
-def count(user, games):
+def normalize(user, games):
+
     '''
     generate a list of lists with ECO, Result, and both usernames for each game
     generate a list of unique eco_lst
 
     '''
-
 
     game_lst = []
     eco_lst = []
@@ -128,8 +135,6 @@ def count(user, games):
         game_lst.append([eco, result, white_un, black_un])
         if eco not in eco_lst:
             eco_lst.append(eco)
-
-
 
     return game_lst, eco_lst
 
@@ -188,6 +193,7 @@ def analyse(game_stats, eco_lst):
         print(game)
     print(eco_lst)
 
+
 def verbose(message, data):
     '''
     print data when in verbose mode
@@ -199,9 +205,10 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    user = load_user_data(USERNAME)
     save_game_data(FILENAME)
+    user = load_user_data(USERNAME)
     games = load_game_data(FILENAME)
-    game_stats, eco_lst = count(user, games)
-    df = analyse(game_stats, eco_lst)
+    game_stats, eco_lst = normalize(user, games)
+    analyse(game_stats, eco_lst)
+
 run()
