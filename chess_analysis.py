@@ -109,44 +109,84 @@ def load_game_data(file):
     verbose('Formatted data', df)
     return df
 
-def stats(user, games):
+def count(user, games):
     '''
-    display stats for USERNAME
-
-    todo:
-    *- count number of occorances of each ECO
-    - calculate win or loss using USERNAME, White, Black, and Result
-    - calculate W/L percentage for each ECO as white and black seperately
-    -
+    generate a list of lists with ECO, Result, and both usernames for each game
+    generate a list of unique eco_lst
 
     '''
-    col = ['ECO',
-           'ECO_count',
-           'wins_white',
-           'wins_black',
-           'loss_white',
-           'loss_black',
-           'win_loss_white',
-           'win_loss_black']
 
-    df = pd.DataFrame(columns = col)
-    eco_count = {}
-    #print(games)
 
+    game_lst = []
+    eco_lst = []
     for game in games.iterrows():
         eco = game[1]['ECO']
-        if eco not in eco_count:
-            eco_count[eco] = 1
-        elif eco in eco_count:
-            eco_count[eco] = eco_count[eco] + 1
-        else:
-            print('error?')
+        result = game[1]['Result']
+        white_un = game[1]['White']
+        black_un = game[1]['Black']
 
-    print(eco_count)
+        game_lst.append([eco, result, white_un, black_un])
+        if eco not in eco_lst:
+            eco_lst.append(eco)
 
-    print(user[USER_DATA])
-    print(games[GAME_DATA])
 
+
+    return game_lst, eco_lst
+
+def analyse(game_stats, eco_lst):
+
+    '''
+    figure out a way to combine:
+
+    the list of unique ECO codes (eco_lst)
+    the list of game results (game_stats)
+
+    to generate
+
+    a dataframe with the following information on each row:
+    {
+    'ECO':'',
+    'eco_count': 0,
+    'wins_white': 0,
+    'wins_black': 0,
+    'loss_white': 0,
+    'loss_black': 0,
+    'draws_black': 0,
+    'draws_white': 0,
+    'win_loss_white': 0.0,
+    'win_loss_black': 0.0
+    }
+
+    by (maybe) refactoring this code:
+
+
+    # if white_un == USERNAME and result == '1-0':
+    #     counts[eco]['wins_white'] = counts[eco]['wins_white'] + 1
+    # elif white_un == USERNAME and result == '0-1':
+    #     counts[eco]['loss_white'] = counts[eco]['loss_white'] + 1
+    # elif white_un == USERNAME and result == '1/2-1/2':
+    #     counts[eco]['draws_white'] = counts[eco]['draws_white'] + 1
+    # elif black_un == USERNAME and result == '0-1':
+    #     counts[eco]['wins_black'] = counts[eco]['wins_black'] + 1
+    # elif black_un == USERNAME and result == '1-0':
+    #     counts[eco]['loss_black'] = counts[eco]['loss_black'] + 1
+    # elif black_un == USERNAME and result == '1/2-1/2':
+    #     counts[eco]['draws_black'] = counts[eco]['draws_black'] + 1
+    # else:
+    #     print('error?')
+
+
+    # try:
+    #     counts[eco]['win_loss_white'] = counts[eco]['wins_white'] / counts[eco]['loss_white']
+    #     counts[eco]['win_loss_black'] = counts[eco]['wins_black'] / counts[eco]['loss_black']
+    # except:continue
+
+    '''
+
+
+    for game in game_stats:
+        print(game)
+    print(eco_lst)
 
 def verbose(message, data):
     '''
@@ -162,6 +202,6 @@ def run():
     user = load_user_data(USERNAME)
     save_game_data(FILENAME)
     games = load_game_data(FILENAME)
-    stats(user, games)
-
+    game_stats, eco_lst = count(user, games)
+    df = analyse(game_stats, eco_lst)
 run()
