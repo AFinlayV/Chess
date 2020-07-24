@@ -194,7 +194,6 @@ def analyse(game_stats, eco_lst):
 
     # generate dataframe from normalized data
     col = [
-        'ECO',
         'eco_count',
         'wins_white',
         'wins_black',
