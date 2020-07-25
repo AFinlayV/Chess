@@ -22,7 +22,7 @@ Ideas for future features:
 USERNAME = 'AlexTheFifth'
 FILENAME = 'lichess_{}.pgn'.format(USERNAME)
 VERBOSE = False
-NUM_GAMES = ''
+NUM_GAMES = 500
 delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
 # data types and lists for columns
@@ -91,7 +91,7 @@ def load_user_data(name):
     user_raw = json.dumps(lichess.api.user(name))
     user_json = json.loads(user_raw)
     user = pd.json_normalize(user_json)
-    verbose('User Data', user.iloc(0)[0])
+    verbose('User Data', user.iloc(0)[0][USER_DATA])
     return user
 
 
@@ -224,13 +224,13 @@ def top_ten(df):
     '''
     pd.options.display.float_format = '{:.2f}%'.format
     print(delimiter,'Top 10 best games for white:', delimiter,
-        df[df['eco_count'] > 25].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
     print(delimiter,'Top 10 best games for black:', delimiter,
-        df[df['eco_count'] > 25].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
     print(delimiter,'Top 10 worst games for white:', delimiter,
-        df[df['eco_count'] > 25].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
     print(delimiter,'Top 10 worst games for black:', delimiter,
-        df[df['eco_count'] > 25].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
 
 def verbose(message, data):
     '''
