@@ -123,7 +123,8 @@ def load_eco(eco_file):
     fh = open(eco_file)
     eco = fh.read()
     eco_json = json.loads(eco)
-    return eco_json
+    eco_df = pd.DataFrame(data = eco_json)
+    return eco_df
 
 
 def load_game_data(file):
@@ -294,19 +295,30 @@ def most_used(df):
 def disp_user(user):
     print(user.T)
 
+def disp_eco(eco_df):
+    print(eco_df[eco_df['eco'] == 'B02'])
+    while True:
+        eco_code = input('Input ECO code ("q" to quit)>')
+        if eco_code == 'q' or eco_code == 'Q':
+            break
+        try:
+            print(eco_df[eco_df['eco'] == eco_code])
+        except:
+            print('ECO code not found. Try again')
+
 def sel_analysis(user, df, eco):
     while True:
-        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \nq - quit \n>')
+        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - display ECO board and moves \nq - quit \n>')
         if ip == 'q' or ip == 'Q':
             break
         else:
             try:
                 ip = int(ip)
-                if ip < 1 or ip > 4:
-                    print('Enter a number 1-4, or "q" to quit')
+                if ip < 1 or ip > 5:
+                    print('Enter a number 1-5, or "q" to quit')
                     continue
             except:
-                print('Enter a number 1-4, or "q" to quit')
+                print('Enter a number 1-5, or "q" to quit')
                 continue
         if ip == 1:
             top_ten(df, eco)
@@ -316,6 +328,8 @@ def sel_analysis(user, df, eco):
             most_used(df)
         elif ip == 4:
             disp_user(user)
+        elif ip == 5:
+            disp_eco(eco)
         else:
             break
 
