@@ -241,7 +241,6 @@ def top_ten(df, eco):
     print(DELIMITER,'Top 10 best games for black:', DELIMITER,
         df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
 
-
 def bot_ten(df, eco):
     '''
     display the top ten worst openings for both black and white by win percentage
@@ -263,6 +262,10 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def load_data():
+    '''
+    load data based on user input and return data to main function
+
+    '''
     un, num, load_new = user_input()
     fn = 'lichess_{}.pgn'.format(un)
     eco_fn = ECO_FILENAME
@@ -275,6 +278,10 @@ def load_data():
     return un, num, fn, user, games, df, eco
 
 def user_input():
+    '''
+     take user input for what data to load and weather or not to download new data
+
+    '''
     un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
     if not un:
         un = USERNAME
@@ -289,14 +296,27 @@ def user_input():
     return un, num, load_new
 
 def most_used(df):
+    '''
+    print a list of the most used ECO codes and counts for each
+
+    '''
     print(DELIMITER, 'Most used openings:', DELIMITER,df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
     print()
 
 def disp_user(user):
+    '''
+    display user data
+    # TODO:
+    -add formatting
+    '''
     print(user.T)
 
 def disp_eco(eco_df):
-    print(eco_df[eco_df['eco'] == 'B02'])
+    '''
+    takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
+    # TODO:
+    -use pychess to display board setups with move list below
+    '''
     while True:
         eco_code = input('Input ECO code ("q" to quit)>')
         if eco_code == 'q' or eco_code == 'Q':
@@ -307,6 +327,9 @@ def disp_eco(eco_df):
             print('ECO code not found. Try again')
 
 def sel_analysis(user, df, eco):
+    '''
+    loop for user to select analysis type.
+    '''
     while True:
         ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - display ECO board and moves \nq - quit \n>')
         if ip == 'q' or ip == 'Q':
@@ -332,8 +355,6 @@ def sel_analysis(user, df, eco):
             disp_eco(eco)
         else:
             break
-
-
 
 def run():
     un, num, fn, user, games, df, eco = load_data()
