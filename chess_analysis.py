@@ -10,6 +10,7 @@ This program takes the username from lichess.org and returns:
 
 - user metadata
 - a top ten list of that user's best and worst ECO opening codes for both white and black.
+-list of openings for given ECO codes
 
 Ideas for future features:
 
