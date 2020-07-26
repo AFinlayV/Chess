@@ -115,7 +115,9 @@ def save_game_data(file, load_new, un, num):
 def load_eco(eco_file):
     '''
     loads ECO Data from ECO_FILENAME
-    returns json object with:
+    returns DataFrame with:
+    -eco code
+    -opening name
     -board position in FEN format
     -moves in PGN format
 
@@ -265,7 +267,14 @@ def verbose(message, data):
 def load_data():
     '''
     load data based on user input and return data to main function
-
+    returns:
+    un : user name
+    num : number of games to load
+    fn : file name
+    user : user metadata
+    games : game data as pychess object
+    df : game data as DataFrame
+    eco : eco data as DataFrame
     '''
     un, num, load_new = user_input()
     fn = 'lichess_{}.pgn'.format(un)
@@ -282,6 +291,10 @@ def user_input():
     '''
      take user input for what data to load and weather or not to download new data
 
+     returns:
+     un = username
+     num = number of games to load
+     load_new = bool for weather to load new games from LiChess
     '''
     un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
     if not un:
@@ -301,8 +314,8 @@ def most_used(df):
     print a list of the most used ECO codes and counts for each
 
     '''
-    print(DELIMITER, 'Most used openings:', DELIMITER,df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
-    print()
+    print(DELIMITER, 'Most used openings:', DELIMITER, df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
+
 
 def disp_user(user):
     '''
@@ -316,16 +329,18 @@ def disp_eco(eco_df):
     '''
     takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
     # TODO:
-    -use pychess to display board setups with move list below
+    -use pychess to display board setups with move list
     '''
     while True:
         eco_code = input('Input ECO code ("q" to quit)>')
         if eco_code == 'q' or eco_code == 'Q':
             break
-        try:
-            print(eco_df[eco_df['eco'] == eco_code])
-        except:
-            print('ECO code not found. Try again')
+        else:
+            try:
+                print(eco_df[eco_df['eco'] == eco_code])
+            except:
+                print('ECO code not found. Try again')
+                continue
 
 def sel_analysis(user, df, eco):
     '''
