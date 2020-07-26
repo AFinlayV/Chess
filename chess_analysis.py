@@ -20,12 +20,13 @@ Ideas for future features:
 
 # Define global variables
 USERNAME = 'AlexTheFifth'
-FILENAME = 'lichess_{}.pgn'.format(USERNAME)
-VERBOSE = False
 NUM_GAMES = 500
-delimiter = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+VERBOSE = False
 
-# data types and lists for columns
+ECO_FILENAME = 'eco.json'
+DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+
+# data types and lists
 USER_DATA = [
     'username',
     'count.all',
@@ -68,7 +69,7 @@ TYPE_DICT = {
     'Moves'             : 'string'
     }
 
-col = [
+COL = [
     'eco_count',
     'wins_white',
     'wins_black',
@@ -87,7 +88,7 @@ def load_user_data(name):
     Returns Series of data for USERNAME
     '''
 
-    print('Loading user data for {}...'.format(USERNAME))
+    print('Loading user data for {}...'.format(name))
     user_raw = json.dumps(lichess.api.user(name))
     user_json = json.loads(user_raw)
     user = pd.json_normalize(user_json)
@@ -95,23 +96,34 @@ def load_user_data(name):
     return user
 
 
-def save_game_data(file):
+def save_game_data(file, load_new, un, num):
 
     '''
     Save game data to FILENAME
     '''
 
-    loadnew = input('Download {} games from lichess? (y/n) '.format(NUM_GAMES))
-    if loadnew == 'y' or loadnew == 'Y':
-        print('Loading {} games for {}... (this might take a while)'.format(NUM_GAMES, USERNAME))
-        pgn = lichess.api.user_games(USERNAME, max = NUM_GAMES, format=SINGLE_PGN)
-        with open(FILENAME, 'w') as f:
+    if load_new:
+        print('Loading {} games for {}... (this might take a while)'.format(num, un))
+        pgn = lichess.api.user_games(un, max = num, format=SINGLE_PGN)
+        with open(file, 'w') as f:
             f.write(pgn)
-        print('data saved as: {}'.format(FILENAME))
+        print('data saved as: {}'.format(file))
     else:
-        print('New games not downloaded for user {}'.format(USERNAME))
+        print('New games not downloaded for user {}'.format(un))
 
+def load_eco(eco_file):
+    '''
+    loads ECO Data from ECO_FILENAME
+    returns json object with:
+    -board position in FEN format
+    -moves in PGN format
 
+    '''
+
+    fh = open(eco_file)
+    eco = fh.read()
+    eco_json = json.loads(eco)
+    return eco_json
 
 
 def load_game_data(file):
@@ -122,11 +134,11 @@ def load_game_data(file):
     Returns DataFrame
     '''
 
-    print('Reading data from {}'.format(FILENAME))
+    print('Reading data from {}'.format(file))
     pgn = open(file)
     result = {}
     i = 0
-    print('Creating DataFrame from file: {}'.format(FILENAME))
+    print('Creating DataFrame from file: {}'.format(file))
     # format PGN data as dict
     while True:
         i += 1
@@ -169,7 +181,7 @@ def normalize(user, games):
 
     return game_lst, eco_lst
 
-def analyse(game_stats, eco_lst):
+def analyse(game_stats, eco_lst, un):
     '''
      generate a dataframe that contains:
      -count for each eco
@@ -182,7 +194,7 @@ def analyse(game_stats, eco_lst):
 
     # generate dataframe from normalized data index and columns
 
-    df = pd.DataFrame(0, index = eco_lst, columns = col)
+    df = pd.DataFrame(0, index = eco_lst, columns = COL)
 
     #populate DataFrame
     for game in game_stats:
@@ -192,7 +204,7 @@ def analyse(game_stats, eco_lst):
         black = game[3]
 
         df.at[eco, 'eco_count'] += 1
-        if white == USERNAME:
+        if white == un:
             if result == '1-0':
                 df.at[eco, 'wins_white'] += 1
             elif result == '0-1':
@@ -201,7 +213,7 @@ def analyse(game_stats, eco_lst):
                 df.at[eco, 'draws_white'] += 1
             else:
                 print('error?')
-        elif black == USERNAME:
+        elif black == un:
             if result == '1-0':
                 df.at[eco, 'loss_black'] += 1
             elif result == '0-1':
@@ -217,19 +229,27 @@ def analyse(game_stats, eco_lst):
     return df
 
 
-def top_ten(df):
+def top_ten(df, eco):
     '''
-    display the top ten best and worst openings for USERNAME for both black and white
+    display the top ten best openings for both black and white by win percentage
 
     '''
     pd.options.display.float_format = '{:.2f}%'.format
-    print(delimiter,'Top 10 best games for white:', delimiter,
+    print(DELIMITER,'Top 10 best games for white:', DELIMITER,
         df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
-    print(delimiter,'Top 10 best games for black:', delimiter,
+    print(DELIMITER,'Top 10 best games for black:', DELIMITER,
         df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
-    print(delimiter,'Top 10 worst games for white:', delimiter,
+
+
+def bot_ten(df, eco):
+    '''
+    display the top ten worst openings for both black and white by win percentage
+
+    '''
+    pd.options.display.float_format = '{:.2f}%'.format
+    print(DELIMITER,'Top 10 worst games for white:', DELIMITER,
         df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
-    print(delimiter,'Top 10 worst games for black:', delimiter,
+    print(DELIMITER,'Top 10 worst games for black:', DELIMITER,
         df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
 
 def verbose(message, data):
@@ -237,16 +257,72 @@ def verbose(message, data):
     print data when in verbose mode
     '''
     if VERBOSE:
-        print(delimiter, message, delimiter, data)
+        print(DELIMITER, message, DELIMITER, data)
     else:
         print('[{}]'.format(message))
 
-def run():
-    save_game_data(FILENAME)
-    user = load_user_data(USERNAME)
-    games = load_game_data(FILENAME)
+def load_data():
+    un, num, load_new = user_input()
+    fn = 'lichess_{}.pgn'.format(un)
+    eco_fn = ECO_FILENAME
+    save_game_data(fn, load_new, un, num)
+    user = load_user_data(un)
+    games = load_game_data(fn)
     game_stats, eco_lst = normalize(user, games)
-    df = analyse(game_stats, eco_lst)
-    top_ten(df)
+    eco = load_eco(eco_fn)
+    df = analyse(game_stats, eco_lst, un)
+    return un, num, fn, user, games, df, eco
+
+def user_input():
+    un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
+    if not un:
+        un = USERNAME
+    num = input('Number of games to load (Default is {}) >'.format(NUM_GAMES))
+    if not num:
+        num = NUM_GAMES
+    load = input('Download {} games from LiChess? This might take a while... (y/n) >'.format(num))
+    if load == 'y' or load == 'Y':
+        load_new = True
+    else:
+        load_new = False
+    return un, num, load_new
+
+def most_used(df):
+    print(DELIMITER, 'Most used openings:', DELIMITER,df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
+    print()
+
+def disp_user(user):
+    print(user.T)
+
+def sel_analysis(user, df, eco):
+    while True:
+        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \nq - quit \n>')
+        if ip == 'q' or ip == 'Q':
+            break
+        else:
+            try:
+                ip = int(ip)
+                if ip < 1 or ip > 4:
+                    print('Enter a number 1-4, or "q" to quit')
+                    continue
+            except:
+                print('Enter a number 1-4, or "q" to quit')
+                continue
+        if ip == 1:
+            top_ten(df, eco)
+        elif ip == 2:
+            bot_ten(df, eco)
+        elif ip == 3:
+            most_used(df)
+        elif ip == 4:
+            disp_user(user)
+        else:
+            break
+
+
+
+def run():
+    un, num, fn, user, games, df, eco = load_data()
+    sel_analysis(user, df, eco)
 
 run()
