@@ -5,6 +5,7 @@ from lichess.format import SINGLE_PGN
 import json
 
 '''
+test
 This program takes the username from lichess.org and returns:
 
 - user metadata
