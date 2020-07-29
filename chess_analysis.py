@@ -11,11 +11,10 @@ This program takes the username from lichess.org and returns:
 
 # TODO:
 
-- build eco.json into this class? seperate class? library?
-
 - make load_data() return dict instead of list,
 - change reference from list to dict in analysis functions (top_ten, bot_ten, etc.)
-
+- make Player class methods return Series/DataFrame data rather than displaying data
+- write output function to display data
 
 '''
 # Load libraries
@@ -29,7 +28,7 @@ from lichess.format import SINGLE_PGN
 USERNAME = 'AlexTheFifth'
 NUM_GAMES = 500
 VERBOSE = False
-DEBUG = True
+DEBUG = False
 ECO_FILENAME = 'eco.json'
 DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
@@ -87,6 +86,8 @@ class Player:
         self.un = un
         self.num = num
         self.load_new = load_new
+        self.load_data()
+        self.disp_user()
 
 
     def load_data(self):
@@ -297,13 +298,11 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    p1 = Player(USERNAME, NUM_GAMES, False)
-    p1.load_data()
-    p1.disp_user()
-    p1.top_ten()
-    p1.bot_ten()
-    p1.most_used()
     op = Openings(ECO_FILENAME)
+    p1 = Player(USERNAME, NUM_GAMES, False)
+
+
+
 
 
 
