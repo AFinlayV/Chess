@@ -54,9 +54,9 @@ from lichess.format import SINGLE_PGN
 USERNAME = 'AlexTheFifth'
 NUM_GAMES = 500
 VERBOSE = False
-DEBUG = False
+DEBUG = True
 ECO_FILENAME = 'eco.json'
-DELIMITER = '\n~~~~~~~~~~~~*******~~~~~~~~~~~~*******~~~~~~~~~~~~\n'
+DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
 
 # List of user data to display in disp_user()
@@ -106,59 +106,7 @@ COL = [
     'win_loss_black'
     ]
 
-# def user_input():
-#     # Get input from user for what data to analyse
-#     un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
-#     if not un:
-#         un = USERNAME
-#     num = input('Number of games to load (Default is {}) >'.format(NUM_GAMES))
-#     if not num:
-#         num = NUM_GAMES
-#     load = input('Download {} games from LiChess? This might take a while... (y/n) >'.format(num))
-#     if load == 'y' or load == 'Y':
-#         load_new = True
-#     else:
-#         load_new = False
-#     data = load_data(un, num, load_new)
-#     return data
-#
-# def analysis_input(data):
-#
-# #    loop for user to select analysis type.
-#
-#     while True:
-#         ip = input('''
-#         Select analysis:
-#     1 - Top ten openings by win %
-#     2 - Bottom 10 openings by win %
-#     3 - Most used openings
-#     4 - Player info
-#     5 - look up ECO
-#     q - quit
-# > ''')
-#         if ip == 'q' or ip == 'Q':
-#             break
-#         else:
-#             try:
-#                 ip = int(ip)
-#                 if ip < 1 or ip > 5:
-#                     print('Enter a number 1-5, or "q" to quit')
-#                     continue
-#             except:
-#                 print('Enter a number 1-5, or "q" to quit')
-#                 continue
-#         if ip == 1:
-#             top_ten(data)
-#         elif ip == 2:
-#             bot_ten(data)
-#         elif ip == 3:
-#             most_used(data)
-#         elif ip == 4:
-#             disp_user(data)
-#         elif ip == 5:
-#             disp_eco(data)
-#         else:
-#             break
+
 class Player:
     def __init__(self, un, num, load_new):
         self.un = un
@@ -202,20 +150,21 @@ class Player:
         verbose('ECO Data loaded', self.eco_df)
 
         # Load user data
-        debug('Loading user data for {}...'.format(self.un))
+        debug('Loading player data for {}...'.format(self.un))
         user_raw = json.dumps(lichess.api.user(self.un))
         user_json = json.loads(user_raw)
         self.user = pd.json_normalize(user_json)
         verbose('Player Data loaded for {}'.format(self.un), self.user.iloc(0)[0][USER_DATA].T)
 
         # load game data in PGN format
-        debug('Reading data from {}'.format(self.fn))
+        debug('Reading data from {}...'.format(self.fn))
         pgn = open(self.fn)
+        verbose('Data read from {}'.format(self.fn), pgn)
 
         # format PGN data as dict
         self.games = {}
         i = 0
-        debug('Creating DataFrame from file: {}'.format(self.fn))
+        debug('Loading raw data from file: {}...'.format(self.fn))
         while True:
             i += 1
             game = chess.pgn.read_game(pgn)
@@ -227,12 +176,12 @@ class Player:
             headers["Moves"] = game.board().variation_san(game.mainline_moves())
 
             self.games["{}".format(i)] = headers
-        verbose('Raw Data loaded from {}'.format(self.fn), self.games)
+        verbose('Raw data loaded from file: {}'.format(self.fn), self.games)
 
         # create Dataframe from dict
-        debug('Formatting games data...')
+        debug('Importing raw data to Pandas...')
         self.df_raw = pd.DataFrame.from_dict(data = self.games).transpose().astype(TYPE_DICT, errors = 'ignore')
-        verbose('Games data formatted', self.df_raw)
+        verbose('Pandas DataFrame created', self.df_raw)
 
         # count occurences of each ECO code and genertate a list of all eco codes
         debug('Counting games...')
@@ -338,7 +287,7 @@ class Player:
         user = self.user
         print(user.iloc(0)[0][USER_DATA].T)
 
-    def disp_eco(data):
+    def disp_eco(self):
         '''
         takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
         # TODO:
@@ -371,7 +320,13 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    p1 = Player(USERNAME, 500, True)
+    p1 = Player(USERNAME, NUM_GAMES, False)
     p1.load_data()
+    p1.disp_user()
+    p1.top_ten()
+    p1.bot_ten()
+    p1.most_used()
+
+
 
 run()
