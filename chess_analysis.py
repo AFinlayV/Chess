@@ -10,32 +10,6 @@ This program takes the username from lichess.org and returns:
 
 
 # TODO:
-- make into a class
-    inputs:
-        username (required)
-        local file name (Default 'lichess_{username}.pgn')
-        number of games to load (default - 500)
-        download or load from local file (default - ?)
-        local file name
-        verbose (default - False)
-        debug (default - False)
-
-    returns:
-        object containing:
-            attributes:
-                user - user metadata
-                games - pychess object of all games Data
-                df - DataFrame with each game as a row
-                eco_lst - list of all ECO codes present in df
-                eco_df - DataFrame of ECO statistics
-            methods:
-                top_ten - 10 best ECO codes for black and white
-                bot_ten - 10 best ECO codes for black and white
-                most_used - most used ECO codes
-                least_used - least used ECO codes
-                disp_user - User metadata
-                disp_eco - info about an ECO code
-                ...
 
 - build eco.json into this class? seperate class? library?
 
