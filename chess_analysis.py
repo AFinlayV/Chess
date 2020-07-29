@@ -22,7 +22,7 @@ Ideas for future features:
 # Define global variables
 USERNAME = 'AlexTheFifth'
 NUM_GAMES = 500
-VERBOSE = False
+VERBOSE = True
 
 ECO_FILENAME = 'eco.json'
 DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
@@ -82,9 +82,7 @@ COL = [
     'win_loss_black'
     ]
 
-
-def load():
-
+def user_input():
     # Get input from user for what data to analyse
     un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
     if not un:
@@ -97,6 +95,9 @@ def load():
         load_new = True
     else:
         load_new = False
+    return un, num, load_new
+
+def load(un, num, load_new):
 
     # load new data (or not)
     fn = 'lichess_{}.pgn'.format(un)
@@ -112,8 +113,10 @@ def load():
     # Load Data about all ECO opening codes into a DataFrame (eco_df)
     print('Loading ECO Database from {}...'.format(ECO_FILENAME))
     fh = open(ECO_FILENAME)
-    eco_df = pd.DataFrame(data = json.loads(fh.read()))
-    verbose('ECO Data loaded ', eco_df)
+    eco = fh.read()
+    eco_json = json.loads(eco)
+    eco_df = pd.DataFrame(data = eco_json)
+    verbose('ECO Data loaded ', eco_df.info())
 
     # Load user data
     print('Loading user data for {}...'.format(un))
@@ -145,16 +148,16 @@ def load():
     verbose('Raw Data', games)
 
     # create Dataframe from dict
-    print('Formatting data...')
+    print('Formatting games data...')
     df_raw = pd.DataFrame.from_dict(data = games).transpose().astype(TYPE_DICT, errors = 'ignore')
-    verbose('Formatted data', df_raw)
+    verbose('Formatted games data', df_raw)
 
     # count occurences of each ECO code and genertate a list of all eco codes
     print('Counting games...')
     game_lst = []
     eco_lst = []
     for game in df_raw.iterrows():
-        #
+
         eco = game[1]['ECO']
         result = game[1]['Result']
         white_un = game[1]['White']
@@ -199,12 +202,15 @@ def load():
                 df.at[eco, 'draws_black'] += 1
             else:
                 print('error?')
+        i+=1
 
     # calculate win/loss percentages for each ECO code
     df['win_loss_white'] = (df['wins_white'] / (df['loss_white'] + df['wins_white'])) * 100
     df['win_loss_black'] = (df['wins_black'] / (df['loss_black'] + df['wins_black'])) * 100
 
-    return [user, games, df, eco_lst]
+    verbose('Loaded {} games for {}'.format(num, un), df.info())
+
+    return [user, games, df, eco_lst, eco_df]
 
 def analyse(data):
     '''
@@ -284,7 +290,7 @@ def disp_eco(data):
     # TODO:
     -use pychess to display board setups with move list
     '''
-    eco_df = data[3]
+    eco_df = data[4]
     while True:
         eco_code = input('Input ECO code ("q" to quit)>')
         if eco_code == 'q' or eco_code == 'Q':
@@ -306,7 +312,8 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    data = load()
+    un, num, load_new = user_input()
+    data = load(un, num, load_new)
     analyse(data)
 
 run()
