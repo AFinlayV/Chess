@@ -41,7 +41,8 @@ This program takes the username from lichess.org and returns:
 # Define global variables
 USERNAME = 'AlexTheFifth'
 NUM_GAMES = 500
-VERBOSE = True
+VERBOSE = False
+DEBUG = False
 
 ECO_FILENAME = 'eco.json'
 DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
@@ -122,7 +123,7 @@ def analysis_input(data):
     loop for user to select analysis type.
     '''
     while True:
-        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - display ECO board and moves \nq - quit \n>')
+        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - look up ECO \nq - quit \n>')
         if ip == 'q' or ip == 'Q':
             break
         else:
@@ -171,34 +172,33 @@ def load_data(un, num, load_new):
         pgn = lichess.api.user_games(un, max = num, format=SINGLE_PGN)
         with open(fn, 'w') as f:
             f.write(pgn)
-        print('data saved as: {}'.format(fn))
+        debug('data saved as: {}'.format(fn))
     else:
         print('New games not downloaded for user {}'.format(un))
 
     # Load Data about all ECO opening codes into a DataFrame (eco_df)
-    print('Loading ECO Database from {}...'.format(ECO_FILENAME))
+    debug('Loading ECO Database from {}...'.format(ECO_FILENAME))
     fh = open(ECO_FILENAME)
     eco = fh.read()
     eco_json = json.loads(eco)
     eco_df = pd.DataFrame(data = eco_json)
-    verbose('ECO Data loaded ', eco_df.info())
+    verbose('ECO Data loaded', eco_df)
 
     # Load user data
-    print('Loading user data for {}...'.format(un))
+    debug('Loading user data for {}...'.format(un))
     user_raw = json.dumps(lichess.api.user(un))
     user_json = json.loads(user_raw)
     user = pd.json_normalize(user_json)
-    verbose('User Data', user.iloc(0)[0][USER_DATA].T)
+    verbose('User Data loaded', user.iloc(0)[0][USER_DATA].T)
 
     # load game data in PGN format
-    print('Reading data from {}'.format(fn))
-
+    debug('Reading data from {}'.format(fn))
     pgn = open(fn)
 
     # format PGN data as dict
     games = {}
     i = 0
-    print('Creating DataFrame from file: {}'.format(fn))
+    debug('Creating DataFrame from file: {}'.format(fn))
     while True:
         i += 1
         game = chess.pgn.read_game(pgn)
@@ -210,15 +210,15 @@ def load_data(un, num, load_new):
         headers["Moves"] = game.board().variation_san(game.mainline_moves())
 
         games["{}".format(i)] = headers
-    verbose('Raw Data', games)
+    verbose('Raw Data loaded', games)
 
     # create Dataframe from dict
-    print('Formatting games data...')
+    debug('Formatting games data...')
     df_raw = pd.DataFrame.from_dict(data = games).transpose().astype(TYPE_DICT, errors = 'ignore')
     verbose('Formatted games data', df_raw)
 
     # count occurences of each ECO code and genertate a list of all eco codes
-    print('Counting games...')
+    debug('Counting games...')
     game_lst = []
     eco_lst = []
     for game in df_raw.iterrows():
@@ -231,7 +231,7 @@ def load_data(un, num, load_new):
         game_lst.append([eco, result, white_un, black_un])
         if eco not in eco_lst:
             eco_lst.append(eco)
-    verbose('Games counted', [eco_lst, game_lst])
+    verbose('Games counted', eco_lst)
 
 
     #populate DataFrame .df from game_lst
@@ -273,7 +273,7 @@ def load_data(un, num, load_new):
     df['win_loss_white'] = (df['wins_white'] / (df['loss_white'] + df['wins_white'])) * 100
     df['win_loss_black'] = (df['wins_black'] / (df['loss_black'] + df['wins_black'])) * 100
 
-    verbose('Loaded {} games for {}'.format(num, un), df.info())
+    verbose('Loaded {} games for {}'.format(num, un), df)
 
     return [user, games, df, eco_lst, eco_df]
 
@@ -309,7 +309,8 @@ def most_used(data):
 
     '''
     df = data[2]
-    print(DELIMITER, 'Most used openings:', DELIMITER, df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
+    print(DELIMITER, 'Most used openings:', DELIMITER)
+    print(df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
 
 def disp_user(data):
     '''
@@ -337,6 +338,10 @@ def disp_eco(data):
             except:
                 print('ECO code not found. Try again')
                 continue
+def debug(message):
+    if DEBUG:
+        print(message)
+
 
 def verbose(message, data):
     '''
