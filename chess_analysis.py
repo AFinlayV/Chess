@@ -88,6 +88,7 @@ class Player:
         self.num = num
         self.load_new = load_new
 
+
     def load_data(self):
         '''
         load data from:
@@ -116,13 +117,7 @@ class Player:
         else:
             print('New games not downloaded for user {}'.format(self.un))
 
-        # Load Data about all ECO opening codes into a DataFrame (eco_df)
-        debug('Loading ECO Database from {}...'.format(ECO_FILENAME))
-        fh = open(ECO_FILENAME)
-        eco = fh.read()
-        eco_json = json.loads(eco)
-        self.eco_df = pd.DataFrame(data = eco_json)
-        verbose('ECO Data loaded', self.eco_df)
+
 
         # Load user data
         debug('Loading player data for {}...'.format(self.un))
@@ -216,7 +211,7 @@ class Player:
 
         verbose('Loaded {} games for {}'.format(self.num, self.un), self.df)
 
-        return [self.user, self.games, self.df, self.eco_lst, self.eco_df]
+        return [self.user, self.games, self.df, self.eco_lst]
 
 
 
@@ -262,23 +257,30 @@ class Player:
         user = self.user
         print(user.iloc(0)[0][USER_DATA].T)
 
-    def disp_eco(self):
+class Openings:
+    def __init__(self, fn):
+        # Load Data about all ECO opening codes into a DataFrame (eco_df)
+        self.fn = fn
+        debug('Loading ECO Database from {}...'.format(self.fn))
+        fh = open(self.fn)
+        eco = fh.read()
+        eco_json = json.loads(eco)
+        self.eco_df = pd.DataFrame(data = eco_json)
+        verbose('ECO Data loaded', self.eco_df)
+
+    def disp_eco(self, eco):
         '''
         takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
         # TODO:
         -use pychess to display board setups with move list
         '''
         eco_df = self.eco_df
-        while True:
-            eco_code = input('Input ECO code ("q" to quit)>')
-            if eco_code == 'q' or eco_code == 'Q':
-                break
-            else:
-                try:
-                    print(eco_df[eco_df['eco'] == eco_code])
-                except:
-                    print('ECO code not found. Try again')
-                    continue
+        eco_code = eco
+        try:
+            print(eco_df[eco_df['eco'] == eco_code])
+        except:
+            print('ECO code not found. Try again')
+
 
 def debug(message):
     if DEBUG:
@@ -295,12 +297,14 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    p1 = Player(USERNAME, NUM_GAMES, True)
+    p1 = Player(USERNAME, NUM_GAMES, False)
     p1.load_data()
     p1.disp_user()
     p1.top_ten()
     p1.bot_ten()
     p1.most_used()
+    op = Openings(ECO_FILENAME)
+
 
 
 
