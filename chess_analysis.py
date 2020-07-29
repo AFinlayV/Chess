@@ -1,7 +1,6 @@
 
 
 '''
-test
 This program takes the username from lichess.org and returns:
 
 - user metadata
@@ -300,11 +299,5 @@ def verbose(message, data):
 def run():
     op = Openings(ECO_FILENAME)
     p1 = Player(USERNAME, NUM_GAMES, False)
-
-
-
-
-
-
 
 run()
