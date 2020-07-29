@@ -1,6 +1,5 @@
 import pandas as pd
 import chess.pgn
-from stockfish import Stockfish as sf
 import lichess.api
 from lichess.format import SINGLE_PGN
 import json
@@ -12,11 +11,31 @@ This program takes the username from lichess.org and returns:
 - a top ten list of that user's best and worst ECO opening codes for both white and black.
 -list of openings for given ECO codes
 
-Ideas for future features:
 
-- game analysis to figure out where user went wrong on an opening using pychess or stockfish
-- make it faster?
-- dislay openings from ECO codes
+# TODO:
+- make into a class
+    takes as input:
+        Username (required)
+        number of games to load (default - 500)
+        download or load from local file (default - load from file)
+        verbose (default - False)
+    build eco.json into class?
+    returns:
+        object containing:
+            data:
+                user - user metadata
+                games - pychess object of all games Data
+                df - DataFrame with each game as a row
+                eco_lst - list of all ECO codes present in df
+                eco_df - DataFrame of ECO statistics
+            methods:
+                top_ten - 10 best ECO codes for black and white
+                bot_ten - 10 best ECO codes for black and white
+                most_used - most used ECO codes
+                least_used - least used ECO codes
+                disp_user - User metadata
+                disp_eco - info about an ECO code
+                ...
 '''
 
 # Define global variables
@@ -95,10 +114,56 @@ def user_input():
         load_new = True
     else:
         load_new = False
-    return un, num, load_new
+    data = load_data(un, num, load_new)
+    return data
 
-def load(un, num, load_new):
+def analysis_input(data):
+    '''
+    loop for user to select analysis type.
+    '''
+    while True:
+        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - display ECO board and moves \nq - quit \n>')
+        if ip == 'q' or ip == 'Q':
+            break
+        else:
+            try:
+                ip = int(ip)
+                if ip < 1 or ip > 5:
+                    print('Enter a number 1-5, or "q" to quit')
+                    continue
+            except:
+                print('Enter a number 1-5, or "q" to quit')
+                continue
+        if ip == 1:
+            top_ten(data)
+        elif ip == 2:
+            bot_ten(data)
+        elif ip == 3:
+            most_used(data)
+        elif ip == 4:
+            disp_user(data)
+        elif ip == 5:
+            disp_eco(data)
+        else:
+            break
 
+def load_data(un, num, load_new):
+    '''
+    load data from:
+        -LiChess.org or local pgn file
+        -local ECO_FILENAME
+
+    save PGN data to file
+
+    return list:
+        [
+        user - user metadata
+        games - pychess object of all games Data
+        df - DataFrame with each game as a row
+        eco_lst - list of all ECO codes present in df
+        eco_df - DataFrame of ECO statistics
+        ]
+    '''
     # load new data (or not)
     fn = 'lichess_{}.pgn'.format(un)
     if load_new:
@@ -212,35 +277,6 @@ def load(un, num, load_new):
 
     return [user, games, df, eco_lst, eco_df]
 
-def analyse(data):
-    '''
-    loop for user to select analysis type.
-    '''
-    while True:
-        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - display ECO board and moves \nq - quit \n>')
-        if ip == 'q' or ip == 'Q':
-            break
-        else:
-            try:
-                ip = int(ip)
-                if ip < 1 or ip > 5:
-                    print('Enter a number 1-5, or "q" to quit')
-                    continue
-            except:
-                print('Enter a number 1-5, or "q" to quit')
-                continue
-        if ip == 1:
-            top_ten(data)
-        elif ip == 2:
-            bot_ten(data)
-        elif ip == 3:
-            most_used(data)
-        elif ip == 4:
-            disp_user(data)
-        elif ip == 5:
-            disp_eco(data)
-        else:
-            break
 
 
 def top_ten(data):
@@ -312,8 +348,7 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    un, num, load_new = user_input()
-    data = load(un, num, load_new)
-    analyse(data)
+    data = user_input()
+    analysis_input(data)
 
 run()
