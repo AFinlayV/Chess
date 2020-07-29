@@ -1,28 +1,27 @@
-import pandas as pd
-import chess.pgn
-import lichess.api
-from lichess.format import SINGLE_PGN
-import json
+
 
 '''
 This program takes the username from lichess.org and returns:
 
 - user metadata
 - a top ten list of that user's best and worst ECO opening codes for both white and black.
--list of openings for given ECO codes
+- list of openings for given ECO codes
 
 
 # TODO:
 - make into a class
-    takes as input:
-        Username (required)
+    inputs:
+        username (required)
+        local file name (Default 'lichess_{username}.pgn')
         number of games to load (default - 500)
-        download or load from local file (default - load from file)
+        download or load from local file (default - ?)
+        local file name
         verbose (default - False)
-    build eco.json into class?
+        debug (default - False)
+
     returns:
         object containing:
-            data:
+            attributes:
                 user - user metadata
                 games - pychess object of all games Data
                 df - DataFrame with each game as a row
@@ -36,18 +35,31 @@ This program takes the username from lichess.org and returns:
                 disp_user - User metadata
                 disp_eco - info about an ECO code
                 ...
+
+- build eco.json into this class? seperate class? library?
+
+- make load_data() return dict instead of list,
+- change reference from list to dict in analysis functions (top_ten, bot_ten, etc.)
+
+
 '''
+# Load libraries
+import json
+import pandas as pd
+import chess.pgn
+import lichess.api
+from lichess.format import SINGLE_PGN
 
 # Define global variables
 USERNAME = 'AlexTheFifth'
 NUM_GAMES = 500
 VERBOSE = False
 DEBUG = False
-
 ECO_FILENAME = 'eco.json'
-DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+DELIMITER = '\n~~~~~~~~~~~~*******~~~~~~~~~~~~*******~~~~~~~~~~~~\n'
 
-# data types and lists
+
+# List of user data to display in disp_user()
 USER_DATA = [
     'username',
     'count.all',
@@ -60,15 +72,7 @@ USER_DATA = [
     'perfs.rapid.rating'
     ]
 
-GAME_DATA = [
-    'ECO',
-    'Date',
-    'White',
-    'Black',
-    'Result',
-    'Moves'
-    ]
-
+# Dict of data types for data pulled from PGN file
 TYPE_DICT = {
     'Event'             : 'string',
     'Site'              : 'string',
@@ -89,7 +93,7 @@ TYPE_DICT = {
     'WhiteRatingDiff'   : 'int16',
     'Moves'             : 'string'
     }
-
+# List of columns for DataFrame that counts ECOs, wins, and losses
 COL = [
     'eco_count',
     'wins_white',
@@ -119,11 +123,19 @@ def user_input():
     return data
 
 def analysis_input(data):
-    '''
-    loop for user to select analysis type.
-    '''
+
+#    loop for user to select analysis type.
+
     while True:
-        ip = input('Select analysis: \n1 - Top ten openings by win % \n2 - Bottom 10 openings by win % \n3 - Most used openings \n4 - User info \n5 - look up ECO \nq - quit \n>')
+        ip = input('''
+        Select analysis:
+    1 - Top ten openings by win %
+    2 - Bottom 10 openings by win %
+    3 - Most used openings
+    4 - Player info
+    5 - look up ECO
+    q - quit
+> ''')
         if ip == 'q' or ip == 'Q':
             break
         else:
@@ -189,7 +201,7 @@ def load_data(un, num, load_new):
     user_raw = json.dumps(lichess.api.user(un))
     user_json = json.loads(user_raw)
     user = pd.json_normalize(user_json)
-    verbose('User Data loaded', user.iloc(0)[0][USER_DATA].T)
+    verbose('Player Data loaded for {}'.format(un), user.iloc(0)[0][USER_DATA].T)
 
     # load game data in PGN format
     debug('Reading data from {}'.format(fn))
@@ -210,12 +222,12 @@ def load_data(un, num, load_new):
         headers["Moves"] = game.board().variation_san(game.mainline_moves())
 
         games["{}".format(i)] = headers
-    verbose('Raw Data loaded', games)
+    verbose('Raw Data loaded from {}'.format(fn), games)
 
     # create Dataframe from dict
     debug('Formatting games data...')
     df_raw = pd.DataFrame.from_dict(data = games).transpose().astype(TYPE_DICT, errors = 'ignore')
-    verbose('Formatted games data', df_raw)
+    verbose('Games data formatted', df_raw)
 
     # count occurences of each ECO code and genertate a list of all eco codes
     debug('Counting games...')
@@ -319,7 +331,7 @@ def disp_user(data):
     -add formatting
     '''
     user = data[0]
-    print(user.T)
+    print(user.iloc(0)[0][USER_DATA].T)
 
 def disp_eco(data):
     '''
@@ -338,9 +350,10 @@ def disp_eco(data):
             except:
                 print('ECO code not found. Try again')
                 continue
+
 def debug(message):
     if DEBUG:
-        print(message)
+        print(DELIMITER, message, DELIMITER)
 
 
 def verbose(message, data):
