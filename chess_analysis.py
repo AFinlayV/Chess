@@ -82,68 +82,55 @@ COL = [
     'win_loss_black'
     ]
 
-def load_user_data(name):
 
-    '''
-    load user data for USERNAME
-    Returns Series of data for USERNAME
-    '''
+def load():
 
-    print('Loading user data for {}...'.format(name))
-    user_raw = json.dumps(lichess.api.user(name))
-    user_json = json.loads(user_raw)
-    user = pd.json_normalize(user_json)
-    verbose('User Data', user.iloc(0)[0][USER_DATA])
-    return user
+    # Get input from user for what data to analyse
+    un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
+    if not un:
+        un = USERNAME
+    num = input('Number of games to load (Default is {}) >'.format(NUM_GAMES))
+    if not num:
+        num = NUM_GAMES
+    load = input('Download {} games from LiChess? This might take a while... (y/n) >'.format(num))
+    if load == 'y' or load == 'Y':
+        load_new = True
+    else:
+        load_new = False
 
-
-def save_game_data(file, load_new, un, num):
-
-    '''
-    Save game data to FILENAME
-    '''
-
+    # load new data (or not)
+    fn = 'lichess_{}.pgn'.format(un)
     if load_new:
         print('Loading {} games for {}... (this might take a while)'.format(num, un))
         pgn = lichess.api.user_games(un, max = num, format=SINGLE_PGN)
-        with open(file, 'w') as f:
+        with open(fn, 'w') as f:
             f.write(pgn)
-        print('data saved as: {}'.format(file))
+        print('data saved as: {}'.format(fn))
     else:
         print('New games not downloaded for user {}'.format(un))
 
-def load_eco(eco_file):
-    '''
-    loads ECO Data from ECO_FILENAME
-    returns DataFrame with:
-    -eco code
-    -opening name
-    -board position in FEN format
-    -moves in PGN format
+    # Load Data about all ECO opening codes into a DataFrame (eco_df)
+    print('Loading ECO Database from {}...'.format(ECO_FILENAME))
+    fh = open(ECO_FILENAME)
+    eco_df = pd.DataFrame(data = json.loads(fh.read()))
+    verbose('ECO Data loaded ', eco_df)
 
-    '''
+    # Load user data
+    print('Loading user data for {}...'.format(un))
+    user_raw = json.dumps(lichess.api.user(un))
+    user_json = json.loads(user_raw)
+    user = pd.json_normalize(user_json)
+    verbose('User Data', user.iloc(0)[0][USER_DATA].T)
 
-    fh = open(eco_file)
-    eco = fh.read()
-    eco_json = json.loads(eco)
-    eco_df = pd.DataFrame(data = eco_json)
-    return eco_df
+    # load game data in PGN format
+    print('Reading data from {}'.format(fn))
 
+    pgn = open(fn)
 
-def load_game_data(file):
-
-    '''
-    load game data from FILENAME and return pandas DataFrame object
-
-    Returns DataFrame
-    '''
-
-    print('Reading data from {}'.format(file))
-    pgn = open(file)
-    result = {}
-    i = 0
-    print('Creating DataFrame from file: {}'.format(file))
     # format PGN data as dict
+    games = {}
+    i = 0
+    print('Creating DataFrame from file: {}'.format(fn))
     while True:
         i += 1
         game = chess.pgn.read_game(pgn)
@@ -154,26 +141,20 @@ def load_game_data(file):
         headers = dict(game.headers)
         headers["Moves"] = game.board().variation_san(game.mainline_moves())
 
-        result["{}".format(i)] = headers
+        games["{}".format(i)] = headers
+    verbose('Raw Data', games)
 
-    verbose('Raw Data', result)
-    df = pd.DataFrame.from_dict(data = result).transpose().astype(TYPE_DICT, errors = 'ignore')
-    verbose('Formatted data', df)
-    return df
+    # create Dataframe from dict
+    print('Formatting data...')
+    df_raw = pd.DataFrame.from_dict(data = games).transpose().astype(TYPE_DICT, errors = 'ignore')
+    verbose('Formatted data', df_raw)
 
-def normalize(user, games):
-
-    '''
-    generate a list of lists with ECO, Result, and both usernames for each game
-    generate a list of unique eco_lst
-
-    Returns list of lists for game data (game_lst), list of ECO codes (eco_lst)
-
-    '''
-
+    # count occurences of each ECO code and genertate a list of all eco codes
+    print('Counting games...')
     game_lst = []
     eco_lst = []
-    for game in games.iterrows():
+    for game in df_raw.iterrows():
+        #
         eco = game[1]['ECO']
         result = game[1]['Result']
         white_un = game[1]['White']
@@ -182,32 +163,24 @@ def normalize(user, games):
         game_lst.append([eco, result, white_un, black_un])
         if eco not in eco_lst:
             eco_lst.append(eco)
+    verbose('Games counted', [eco_lst, game_lst])
 
-    return game_lst, eco_lst
 
-def analyse(game_stats, eco_lst, un):
-    '''
-     generate a dataframe that contains:
-     -count for each eco
-     -W/L/D counts for each ECO for both black and WhiteElo
-     - win percentages for each ECO as black and white
-
-     Returns DataFrame
-
-    '''
-
-    # generate dataframe from normalized data index and columns
-
+    #populate DataFrame .df from game_lst
     df = pd.DataFrame(0, index = eco_lst, columns = COL)
-
-    #populate DataFrame
-    for game in game_stats:
+    i=1
+    for game in game_lst:
         eco = game[0]
         result = game[1]
         white = game[2]
         black = game[3]
+        if VERBOSE:
+            print('Game {} '.format(i), white, black, result, eco)
 
+        # Increment ECO counts
         df.at[eco, 'eco_count'] += 1
+
+        # Increment win count
         if white == un:
             if result == '1-0':
                 df.at[eco, 'wins_white'] += 1
@@ -226,123 +199,14 @@ def analyse(game_stats, eco_lst, un):
                 df.at[eco, 'draws_black'] += 1
             else:
                 print('error?')
+
     # calculate win/loss percentages for each ECO code
     df['win_loss_white'] = (df['wins_white'] / (df['loss_white'] + df['wins_white'])) * 100
     df['win_loss_black'] = (df['wins_black'] / (df['loss_black'] + df['wins_black'])) * 100
 
-    return df
+    return [user, games, df, eco_lst]
 
-
-def top_ten(df, eco):
-    '''
-    display the top ten best openings for both black and white by win percentage
-
-    '''
-    pd.options.display.float_format = '{:.2f}%'.format
-    print(DELIMITER,'Top 10 best games for white:', DELIMITER,
-        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
-    print(DELIMITER,'Top 10 best games for black:', DELIMITER,
-        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
-
-def bot_ten(df, eco):
-    '''
-    display the top ten worst openings for both black and white by win percentage
-
-    '''
-    pd.options.display.float_format = '{:.2f}%'.format
-    print(DELIMITER,'Top 10 worst games for white:', DELIMITER,
-        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
-    print(DELIMITER,'Top 10 worst games for black:', DELIMITER,
-        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
-
-def verbose(message, data):
-    '''
-    print data when in verbose mode
-    '''
-    if VERBOSE:
-        print(DELIMITER, message, DELIMITER, data)
-    else:
-        print('[{}]'.format(message))
-
-def load_data():
-    '''
-    load data based on user input and return data to main function
-    returns:
-    un : user name
-    num : number of games to load
-    fn : file name
-    user : user metadata
-    games : game data as pychess object
-    df : game data as DataFrame
-    eco : eco data as DataFrame
-    '''
-    un, num, load_new = user_input()
-    fn = 'lichess_{}.pgn'.format(un)
-    eco_fn = ECO_FILENAME
-    save_game_data(fn, load_new, un, num)
-    user = load_user_data(un)
-    games = load_game_data(fn)
-    game_stats, eco_lst = normalize(user, games)
-    eco = load_eco(eco_fn)
-    df = analyse(game_stats, eco_lst, un)
-    return un, num, fn, user, games, df, eco
-
-def user_input():
-    '''
-     take user input for what data to load and weather or not to download new data
-
-     returns:
-     un = username
-     num = number of games to load
-     load_new = bool for weather to load new games from LiChess
-    '''
-    un = input('LiChess.org username (Default is {}) >'.format(USERNAME))
-    if not un:
-        un = USERNAME
-    num = input('Number of games to load (Default is {}) >'.format(NUM_GAMES))
-    if not num:
-        num = NUM_GAMES
-    load = input('Download {} games from LiChess? This might take a while... (y/n) >'.format(num))
-    if load == 'y' or load == 'Y':
-        load_new = True
-    else:
-        load_new = False
-    return un, num, load_new
-
-def most_used(df):
-    '''
-    print a list of the most used ECO codes and counts for each
-
-    '''
-    print(DELIMITER, 'Most used openings:', DELIMITER, df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
-
-
-def disp_user(user):
-    '''
-    display user data
-    # TODO:
-    -add formatting
-    '''
-    print(user.T)
-
-def disp_eco(eco_df):
-    '''
-    takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
-    # TODO:
-    -use pychess to display board setups with move list
-    '''
-    while True:
-        eco_code = input('Input ECO code ("q" to quit)>')
-        if eco_code == 'q' or eco_code == 'Q':
-            break
-        else:
-            try:
-                print(eco_df[eco_df['eco'] == eco_code])
-            except:
-                print('ECO code not found. Try again')
-                continue
-
-def sel_analysis(user, df, eco):
+def analyse(data):
     '''
     loop for user to select analysis type.
     '''
@@ -360,20 +224,89 @@ def sel_analysis(user, df, eco):
                 print('Enter a number 1-5, or "q" to quit')
                 continue
         if ip == 1:
-            top_ten(df, eco)
+            top_ten(data)
         elif ip == 2:
-            bot_ten(df, eco)
+            bot_ten(data)
         elif ip == 3:
-            most_used(df)
+            most_used(data)
         elif ip == 4:
-            disp_user(user)
+            disp_user(data)
         elif ip == 5:
-            disp_eco(eco)
+            disp_eco(data)
         else:
             break
 
+
+def top_ten(data):
+    '''
+    display the top ten best openings for both black and white by win percentage
+
+    '''
+    df = data[2]
+    pd.options.display.float_format = '{:.2f}%'.format
+    print(DELIMITER,'Top 10 best games for white:', DELIMITER,
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
+    print(DELIMITER,'Top 10 best games for black:', DELIMITER,
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
+
+def bot_ten(data):
+    '''
+    display the top ten worst openings for both black and white by win percentage
+
+    '''
+    df = data[2]
+    pd.options.display.float_format = '{:.2f}%'.format
+    print(DELIMITER,'Top 10 worst games for white:', DELIMITER,
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
+    print(DELIMITER,'Top 10 worst games for black:', DELIMITER,
+        df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
+
+def most_used(data):
+    '''
+    print a list of the most used ECO codes and counts for each
+
+    '''
+    df = data[2]
+    print(DELIMITER, 'Most used openings:', DELIMITER, df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
+
+def disp_user(data):
+    '''
+    display user data
+    # TODO:
+    -add formatting
+    '''
+    user = data[0]
+    print(user.T)
+
+def disp_eco(data):
+    '''
+    takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
+    # TODO:
+    -use pychess to display board setups with move list
+    '''
+    eco_df = data[3]
+    while True:
+        eco_code = input('Input ECO code ("q" to quit)>')
+        if eco_code == 'q' or eco_code == 'Q':
+            break
+        else:
+            try:
+                print(eco_df[eco_df['eco'] == eco_code])
+            except:
+                print('ECO code not found. Try again')
+                continue
+
+def verbose(message, data):
+    '''
+    print data when in verbose mode
+    '''
+    if VERBOSE:
+        print(DELIMITER, message, DELIMITER, data)
+    else:
+        print('[{}]'.format(message))
+
 def run():
-    un, num, fn, user, games, df, eco = load_data()
-    sel_analysis(user, df, eco)
+    data = load()
+    analyse(data)
 
 run()
