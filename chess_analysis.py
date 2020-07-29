@@ -320,7 +320,7 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    p1 = Player(USERNAME, NUM_GAMES, False)
+    p1 = Player(USERNAME, NUM_GAMES, True)
     p1.load_data()
     p1.disp_user()
     p1.top_ten()
