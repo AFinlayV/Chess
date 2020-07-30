@@ -235,8 +235,9 @@ class Player:
         print(df.sort_values(by='eco_count', ascending=False)['eco_count'][0:num], '\n')
 
     def disp_user(self, data_lst):
-        user = self.user
-        print(user.iloc(0)[0][data_lst].T)
+        user = self.user.iloc(0)[0][data_lst].T
+        print(DELIMITER, 'Player data for {}'.format(self.un), DELIMITER, user)
+
 
 
 class Openings:
@@ -270,7 +271,7 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    p1 = Player(USERNAME, NUM_GAMES, True)
+    p1 = Player(USERNAME, NUM_GAMES, False)
     p1.disp_user(USER_DATA)
     p1.best_and_worst(5)
     p1.most_used(10)
