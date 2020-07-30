@@ -239,24 +239,24 @@ class Player:
         print(user.iloc(0)[0][USER_DATA].T)
 
 
-class Openings:
-    def __init__(self, fn):
-        # Load Data about all ECO opening codes into a DataFrame (eco_df)
-        self.fn = fn
-        debug('Loading ECO Database from {}...'.format(self.fn))
-        fh = open(self.fn)
-        eco = fh.read()
-        eco_json = json.loads(eco)
-        self.eco_df = pd.DataFrame(data = eco_json)
-        verbose('ECO Data loaded', self.eco_df)
-
-    def disp_eco(self, eco):
-        eco_df = self.eco_df
-        eco_code = eco
-        try:
-            print(eco_df[eco_df['eco'] == eco_code])
-        except:
-            print('ECO code not found. Try again')
+# class Openings:
+#     def __init__(self, fn):
+#         # Load Data about all ECO opening codes into a DataFrame (eco_df)
+#         self.fn = fn
+#         debug('Loading ECO Database from {}...'.format(self.fn))
+#         fh = open(self.fn)
+#         eco = fh.read()
+#         eco_json = json.loads(eco)
+#         self.eco_df = pd.DataFrame(data = eco_json)
+#         verbose('ECO Data loaded', self.eco_df)
+#
+#     def disp_eco(self, eco):
+#         eco_df = self.eco_df
+#         eco_code = eco
+#         try:
+#             print(eco_df[eco_df['eco'] == eco_code])
+#         except:
+#             print('ECO code not found. Try again')
 
 def debug(message):
     if DEBUG:
@@ -269,7 +269,6 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    #op = Openings(ECO_FILENAME)
     p1 = Player(USERNAME, NUM_GAMES, True)
     p1.best_and_worst(5)
 
