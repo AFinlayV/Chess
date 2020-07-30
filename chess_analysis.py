@@ -29,14 +29,6 @@ This program takes the username from lichess.org and returns:
 
 - an Openings object:
     TBA
-
-# TODO:
-
-- make load_data() return dict instead of list,
-- change reference from list to dict in analysis functions (top_ten, bot_ten, etc.)
-- make Player class methods return Series/DataFrame data rather than displaying data
-- write output function to display data
-
 '''
 
 # Load libraries
@@ -157,10 +149,8 @@ class Player:
             #verbose('Loading game number {}'.format(i), game)
             if game is None:
                 break
-
             headers = dict(game.headers)
             headers["Moves"] = game.board().variation_san(game.mainline_moves())
-
             self.games["{}".format(i)] = headers
         verbose('Raw data loaded from file: {}'.format(self.fn), self.games)
 
@@ -174,12 +164,10 @@ class Player:
         game_lst = []
         self.eco_lst = []
         for game in self.df_raw.iterrows():
-
             eco = game[1]['ECO']
             result = game[1]['Result']
             white_un = game[1]['White']
             black_un = game[1]['Black']
-
             game_lst.append([eco, result, white_un, black_un])
             if eco not in self.eco_lst:
                 self.eco_lst.append(eco)
@@ -223,7 +211,6 @@ class Player:
         # calculate win/loss percentages for each ECO code
         self.df['win_loss_white'] = (self.df['wins_white'] / (self.df['loss_white'] + self.df['wins_white'])) * 100
         self.df['win_loss_black'] = (self.df['wins_black'] / (self.df['loss_black'] + self.df['wins_black'])) * 100
-
         verbose('Loaded {} games for {}'.format(self.num, self.un), self.df)
 
     def best(self, num, side):
