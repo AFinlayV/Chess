@@ -3,29 +3,29 @@ This program takes the username from lichess.org and returns:
 
 - a Player object with the following attributes:
 
-            .user
-                user metadata
-            .games
-                pychess object of all games Data
-            .df
-                DataFrame with each game as a row
-            .eco_lst
-                list of all ECO codes present in df
-            .eco_df
-                DataFrame of ECO statistics
+        .user
+            user metadata
+        .games
+            pychess object of all games Data
+        .df
+            DataFrame with each game as a row
+        .eco_lst
+            list of all ECO codes present in df
+        .eco_df
+            DataFrame of ECO statistics
 
-        and the following methods:
+    and the following methods:
 
-            .disp_user()
-                display user Data
-            .most_used()
-                most used openings
-            .best(num, side)
-                return the best {num} openings for {side}
-            .worst(num, side)
-                return the worst {num} openings for {side}
-            .best_and_worst(num)
-                return best and worst {num} for both black and white
+        .disp_user()
+            display user Data
+        .most_used()
+            most used openings
+        .best(num, side)
+            return the best {num} openings for {side}
+        .worst(num, side)
+            return the worst {num} openings for {side}
+        .best_and_worst(num)
+            return best and worst {num} for both black and white
 
 - an Openings object:
     TBA
