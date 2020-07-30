@@ -28,7 +28,8 @@ This program takes the username from lichess.org and returns:
             return best and worst {num} for both black and white
 
 - an Openings object:
-    TBA
+    .disp_eco(eco)
+        display all instances of ECO value (A00-E99) in eco.json
 '''
 
 # Load libraries
@@ -146,7 +147,6 @@ class Player:
         while True:
             i += 1
             game = chess.pgn.read_game(pgn)
-            #verbose('Loading game number {}'.format(i), game)
             if game is None:
                 break
             headers = dict(game.headers)
@@ -231,32 +231,33 @@ class Player:
 
     def most_used(self, num):
         df = self.df
-        print(DELIMITER, 'Most used {} openings:'.format(num), DELIMITER)
+        print(DELIMITER, '{}\'s most used {} openings:'.format(self.un, num), DELIMITER)
         print(df.sort_values(by='eco_count', ascending=False)['eco_count'][0:num], '\n')
 
-    def disp_user(self):
+    def disp_user(self, data_lst):
         user = self.user
-        print(user.iloc(0)[0][USER_DATA].T)
+        print(user.iloc(0)[0][data_lst].T)
 
 
-# class Openings:
-#     def __init__(self, fn):
-#         # Load Data about all ECO opening codes into a DataFrame (eco_df)
-#         self.fn = fn
-#         debug('Loading ECO Database from {}...'.format(self.fn))
-#         fh = open(self.fn)
-#         eco = fh.read()
-#         eco_json = json.loads(eco)
-#         self.eco_df = pd.DataFrame(data = eco_json)
-#         verbose('ECO Data loaded', self.eco_df)
-#
-#     def disp_eco(self, eco):
-#         eco_df = self.eco_df
-#         eco_code = eco
-#         try:
-#             print(eco_df[eco_df['eco'] == eco_code])
-#         except:
-#             print('ECO code not found. Try again')
+class Openings:
+    def __init__(self, fn):
+        # Load Data about all ECO opening codes into a DataFrame (eco_df)
+        self.fn = fn
+        debug('Loading ECO Database from {}...'.format(self.fn))
+        fh = open(self.fn)
+        eco = fh.read()
+        eco_json = json.loads(eco)
+        self.eco_df = pd.DataFrame(data = eco_json)
+        verbose('ECO Data loaded', self.eco_df)
+
+    def disp_eco(self, eco):
+        eco_df = self.eco_df
+        eco_code = eco
+        try:
+            print(eco_df[eco_df['eco'] == eco_code])
+        except:
+            print('ECO code not found. Try again')
+
 
 def debug(message):
     if DEBUG:
@@ -270,6 +271,8 @@ def verbose(message, data):
 
 def run():
     p1 = Player(USERNAME, NUM_GAMES, True)
+    p1.disp_user(USER_DATA)
     p1.best_and_worst(5)
+    p1.most_used(10)
 
 run()
