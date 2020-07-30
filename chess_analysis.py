@@ -32,7 +32,7 @@ from lichess.format import SINGLE_PGN
 
 # Define global variables
 USERNAME = 'AlexTheFifth'
-NUM_GAMES = 500
+NUM_GAMES = 1000
 VERBOSE = False
 DEBUG = False
 ECO_FILENAME = 'eco.json'
@@ -87,16 +87,9 @@ COL = [
     'win_loss_black'
     ]
 
+
 class Player:
     def __init__(self, un, num, load_new):
-        self.un = un
-        self.num = num
-        self.load_new = load_new
-        self.load_data()
-        self.disp_user()
-
-
-    def load_data(self):
         '''
         load data from:
             -LiChess.org or local pgn file
@@ -104,15 +97,18 @@ class Player:
 
         save PGN data to file
 
-        return list:
-            [
-            user - user metadata
-            games - pychess object of all games Data
-            df - DataFrame with each game as a row
-            eco_lst - list of all ECO codes present in df
-            eco_df - DataFrame of ECO statistics
+        sets attributes
+            .user - user metadata
+            .games - pychess object of all games Data
+            .df - DataFrame with each game as a row
+            .eco_lst - list of all ECO codes present in df
+            .eco_df - DataFrame of ECO statistics
             ]
         '''
+        self.un = un
+        self.num = num
+        self.load_new = load_new
+
         # load new data (or not)
         self.fn = 'lichess_{}.pgn'.format(self.un)
         if self.load_new:
@@ -215,17 +211,26 @@ class Player:
 
         verbose('Loaded {} games for {}'.format(self.num, self.un), self.df)
 
-        return [self.user, self.games, self.df, self.eco_lst]
-
     def best(self, num, side):
-        self.df.sortby[]
+        df = self.df
+        best = df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_{}'.format(side), ascending = False)[['eco_count', 'win_loss_{}'.format(side)]][0:num]
+        return best
 
+    def worst(self, num, side):
+        df = self.df
+        worst = df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_{}'.format(side), ascending = True)[['eco_count', 'win_loss_{}'.format(side)]][0:num]
+        return worst
+
+    def best_and_worst(self, num):
+        print(DELIMITER, '{}\'s top {} for white'.format(self.un, num), DELIMITER, self.best(num, 'white'))
+        print(DELIMITER, '{}\'s top {} for black'.format(self.un, num), DELIMITER, self.best(num, 'black'))
+        print(DELIMITER, '{}\'s bottom {} for white'.format(self.un, num), DELIMITER, self.worst(num, 'white'))
+        print(DELIMITER, '{}\'s bottom {} for black'.format(self.un, num), DELIMITER, self.worst(num, 'black'))
 
     def most_used(self, num):
         df = self.df
         print(DELIMITER, 'Most used {} openings:'.format(num), DELIMITER)
         print(df.sort_values(by='eco_count', ascending=False)['eco_count'][0:num], '\n')
-
 
     def disp_user(self):
         user = self.user
@@ -251,11 +256,9 @@ class Openings:
         except:
             print('ECO code not found. Try again')
 
-
 def debug(message):
     if DEBUG:
         print(DELIMITER, message, DELIMITER)
-
 
 def verbose(message, data):
     if VERBOSE:
@@ -264,8 +267,8 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    op = Openings(ECO_FILENAME)
-    p1 = Player(USERNAME, NUM_GAMES, False)
-    p1.most_used(10)
+    #op = Openings(ECO_FILENAME)
+    p1 = Player(USERNAME, NUM_GAMES, True)
+    p1.best_and_worst(5)
 
 run()
