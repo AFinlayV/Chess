@@ -1,12 +1,18 @@
-
-
 '''
 This program takes the username from lichess.org and returns:
 
-- user metadata
-- a top ten list of that user's best and worst ECO opening codes for both white and black.
-- list of openings for given ECO codes
+- a Player object with the following attributes:
 
+            user -          user metadata
+            games -         pychess object of all games Data
+            df -            DataFrame with each game as a row
+            eco_lst -       list of all ECO codes present in df
+            eco_df -        DataFrame of ECO statistics
+        and the following methods:
+            disp_user -     display user Data
+            most_used -     most used openings
+
+- an Openings object
 
 # TODO:
 
@@ -16,6 +22,7 @@ This program takes the username from lichess.org and returns:
 - write output function to display data
 
 '''
+
 # Load libraries
 import json
 import pandas as pd
@@ -29,7 +36,7 @@ NUM_GAMES = 500
 VERBOSE = False
 DEBUG = False
 ECO_FILENAME = 'eco.json'
-DELIMITER = '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+DELIMITER = '\n<=>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<=>\n'
 
 
 # List of user data to display in disp_user()
@@ -66,6 +73,7 @@ TYPE_DICT = {
     'WhiteRatingDiff'   : 'int16',
     'Moves'             : 'string'
     }
+
 # List of columns for DataFrame that counts ECOs, wins, and losses
 COL = [
     'eco_count',
@@ -78,7 +86,6 @@ COL = [
     'win_loss_white',
     'win_loss_black'
     ]
-
 
 class Player:
     def __init__(self, un, num, load_new):
@@ -116,8 +123,6 @@ class Player:
             debug('data saved as: {}'.format(self.fn))
         else:
             print('New games not downloaded for user {}'.format(self.un))
-
-
 
         # Load user data
         debug('Loading player data for {}...'.format(self.un))
@@ -169,7 +174,6 @@ class Player:
                 self.eco_lst.append(eco)
         verbose('Games counted', self.eco_lst)
 
-
         #populate DataFrame .df from game_lst
         self.df = pd.DataFrame(0, index = self.eco_lst, columns = COL)
         i=1
@@ -184,7 +188,7 @@ class Player:
             # Increment ECO counts
             self.df.at[eco, 'eco_count'] += 1
 
-            # Increment win count
+            # Increment win counts
             if white == self.un:
                 if result == '1-0':
                     self.df.at[eco, 'wins_white'] += 1
@@ -213,49 +217,20 @@ class Player:
 
         return [self.user, self.games, self.df, self.eco_lst]
 
+    def best(self, num, side):
+        self.df.sortby[]
 
 
-    def top_ten(self):
-        '''
-        display the top ten best openings for both black and white by win percentage
-
-        '''
+    def most_used(self, num):
         df = self.df
-        pd.options.display.float_format = '{:.2f}%'.format
-        print(DELIMITER,'Top 10 best games for white:', DELIMITER,
-            df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = False)[['eco_count', 'win_loss_white']][0:10])
-        print(DELIMITER,'Top 10 best games for black:', DELIMITER,
-            df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = False)[['eco_count', 'win_loss_black']][0:10])
+        print(DELIMITER, 'Most used {} openings:'.format(num), DELIMITER)
+        print(df.sort_values(by='eco_count', ascending=False)['eco_count'][0:num], '\n')
 
-    def bot_ten(self):
-        '''
-        display the top ten worst openings for both black and white by win percentage
-
-        '''
-        df = self.df
-        pd.options.display.float_format = '{:.2f}%'.format
-        print(DELIMITER,'Top 10 worst games for white:', DELIMITER,
-            df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_white', ascending = True)[['eco_count', 'win_loss_white']][0:10])
-        print(DELIMITER,'Top 10 worst games for black:', DELIMITER,
-            df[df['eco_count'] > (NUM_GAMES * .01)].sort_values(by = 'win_loss_black', ascending = True)[['eco_count', 'win_loss_black']][0:10])
-
-    def most_used(self):
-        '''
-        print a list of the most used ECO codes and counts for each
-
-        '''
-        df = self.df
-        print(DELIMITER, 'Most used openings:', DELIMITER)
-        print(df.sort_values(by='eco_count', ascending=False)['eco_count'][0:10], '\n')
 
     def disp_user(self):
-        '''
-        display user data
-        # TODO:
-        -add formatting
-        '''
         user = self.user
         print(user.iloc(0)[0][USER_DATA].T)
+
 
 class Openings:
     def __init__(self, fn):
@@ -269,11 +244,6 @@ class Openings:
         verbose('ECO Data loaded', self.eco_df)
 
     def disp_eco(self, eco):
-        '''
-        takes user input of ECO codes (A00-E99) and displays relevant data loaded from ECO_FILENAME
-        # TODO:
-        -use pychess to display board setups with move list
-        '''
         eco_df = self.eco_df
         eco_code = eco
         try:
@@ -288,9 +258,6 @@ def debug(message):
 
 
 def verbose(message, data):
-    '''
-    print data when in verbose mode
-    '''
     if VERBOSE:
         print(DELIMITER, message, DELIMITER, data)
     else:
@@ -299,5 +266,6 @@ def verbose(message, data):
 def run():
     op = Openings(ECO_FILENAME)
     p1 = Player(USERNAME, NUM_GAMES, False)
+    p1.most_used(10)
 
 run()
