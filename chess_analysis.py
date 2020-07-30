@@ -1,37 +1,3 @@
-'''
-This program takes the username from lichess.org and returns:
-
-- a Player object with the following attributes:
-
-        .user
-            user metadata
-        .games
-            pychess object of all games Data
-        .df
-            DataFrame with each game as a row
-        .eco_lst
-            list of all ECO codes present in df
-        .eco_df
-            DataFrame of ECO statistics
-
-    and the following methods:
-
-        .disp_user()
-            display user Data
-        .most_used()
-            most used openings
-        .best(num, side)
-            return the best {num} openings for {side}
-        .worst(num, side)
-            return the worst {num} openings for {side}
-        .best_and_worst(num)
-            return best and worst {num} for both black and white
-
-- an Openings object:
-    .disp_eco(eco)
-        display all instances of ECO value (A00-E99) in eco.json
-'''
-
 # Load libraries
 import json
 import pandas as pd
@@ -98,6 +64,32 @@ COL = [
 
 
 class Player:
+    '''
+    attributes:
+        .user
+            user metadata
+        .games
+            pychess object of all games Data
+        .df
+            DataFrame with each game as a row
+        .eco_lst
+            list of all ECO codes present in df
+        .eco_df
+            DataFrame of ECO statistics
+
+    methods:
+        .disp_user()
+            display user Data
+        .most_used()
+            most used openings
+        .best(num, side)
+            return the best {num} openings for {side}
+        .worst(num, side)
+            return the worst {num} openings for {side}
+        .best_and_worst(num)
+            return best and worst {num} for both black and white
+    '''
+
     def __init__(self, un, num, load_new):
         '''
         load data from:
@@ -241,6 +233,17 @@ class Player:
 
 
 class Openings:
+    '''
+    attributes:
+        .eco_df
+            DataFrame of data from eco.json
+
+    methods:
+        .disp_eco(eco)
+            display all instances of ECO value (A00-E99) in eco.json
+
+    '''
+
     def __init__(self, fn):
         # Load Data about all ECO opening codes into a DataFrame (eco_df)
         self.fn = fn
