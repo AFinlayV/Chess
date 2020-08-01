@@ -8,12 +8,40 @@ from lichess.format import SINGLE_PGN
 # TODO:
 
 - use arguments rather than hard coded constants
+- make config file for lists/data types
 - clean up Player.__init__
-- build class Openings
-    - return game board given an ECO code
-    - return player stats given player object and ECO code
-    - import W/L/D stats for
+    seperate functions as methods:
+        - PGN > json
+        - download new data
+        - Save Data
+        - normalize data
+        - load data to DataFrame
+        - analyse data
+- impliment an analysis library (stockfish?)
+- impliment opening explorer
+- impliment board display and moving through games by moves (python-chess?, lichess?)
+- add testing of input for ECO codes using reg exp
+- User Interface
+- tactics quiz from real mistakes in Player data
 
+- add methods to Player Class
+    - have .best, .worst, etc. return data rather than displaying data
+    - display method for
+        - ordered lists,
+        - graphs, and
+        - chess postions on a board
+    - get opening stats for Player from ECO code
+        - win/loss/draw
+        - number of moves before first 'mistake'
+        - most common first mistake
+        - win percentage over time for ECO code
+    - build opening explorer for Player data
+    - list all games for given ECO code / player,
+    - select a game for analysis,
+    - use an analysis library to evaluate each move in a game
+    - display a graph of advantage by move
+    - find mistakes - moves where the advantage changed from one side to the other
+    - make a list of mistakes for whole data set, or given ECO, or given game
 
 '''
 # Define global variables
@@ -104,7 +132,7 @@ class Player:
     def __init__(self, un, num, load_new):
         '''
         load data from:
-            -LiChess.org or local pgn file
+            -LiChess.org or local PGN file
             -local ECO_FILENAME
 
         save PGN data to file
@@ -244,12 +272,6 @@ class Player:
         user = self.user.iloc(0)[0][data_lst].T
         print(DELIMITER, 'Player data for {}'.format(self.un), DELIMITER, user)
 
-    def win_loss_draw(self, eco, side):
-        print('W/L/D for {}, {}, {}'.format(self.un, eco, side))
-        print(self.df[slef.df['ECO'] == eco])
-        
-
-
 
 
 class Openings:
@@ -294,11 +316,9 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
-    op = Openings(ECO_FILENAME)
     p1 = Player(USERNAME, NUM_GAMES, False)
-    p1.
-    # p1.disp_user(USER_DATA)
-    # p1.best_and_worst(5)
-    # p1.most_used(10)
+    p1.disp_user(USER_DATA)
+    p1.best_and_worst(5)
+    p1.most_used(10)
 
 run()
