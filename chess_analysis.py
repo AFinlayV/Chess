@@ -9,6 +9,7 @@ from lichess.format import SINGLE_PGN
 
 - use arguments rather than hard coded constants
 - make config file for lists/data types
+- do I need pandas in this program? maybe just dicts and lists?
 - clean up Player.__init__
     seperate functions as methods:
         - PGN > json
@@ -18,11 +19,12 @@ from lichess.format import SINGLE_PGN
         - load data to DataFrame
         - analyse data
 - impliment an analysis library (stockfish?)
-- impliment opening explorer
+- impliment opening explorer (polyglot? > python-chess)
 - impliment board display and moving through games by moves (python-chess?, lichess?)
 - add testing of input for ECO codes using reg exp
 - User Interface
 - tactics quiz from real mistakes in Player data
+- compare data between 2 players (where my best openings line up with their worst)
 
 - add methods to Player Class
     - have .best, .worst, etc. return data rather than displaying data
