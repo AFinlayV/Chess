@@ -1,6 +1,8 @@
 # Load libraries
 import json
 import pandas as pd
+import chess
+import stockfish
 import chess.pgn
 import lichess.api
 from lichess.format import SINGLE_PGN
@@ -9,22 +11,29 @@ from lichess.format import SINGLE_PGN
 
 - use arguments rather than hard coded constants
 - make config file for lists/data types
-- do I need pandas in this program? maybe just dicts and lists?
+- do I need pandas? maybe just dicts and lists?
+
 - clean up Player.__init__
     seperate functions as methods:
-        - PGN > json
         - download new data
         - Save Data
+        - PGN > json (import pgn-read?)
         - normalize data
         - load data to DataFrame
         - analyse data
-- impliment an analysis library (stockfish?)
-- impliment opening explorer (polyglot? > python-chess)
-- impliment board display and moving through games by moves (python-chess?, lichess?)
+        - save analysed data as {player_username}.json
+        - update data rather than downloading all data every time.
+
+- add libraries:
+    - impliment an analysis library (stockfish?, pystockfish?)
+    - impliment opening explorer (polyglot? > python-chess)
+    - impliment board display and moving through games by moves (python-chess?, lichess?)
+    - User Interface to interact with a chess board (python-chess-toc?)
+    - tactics quiz from real mistakes in Player data (chessproblem.ui)- - annotate games (chess-annotator)
+
 - add testing of input for ECO codes using reg exp
-- User Interface
-- tactics quiz from real mistakes in Player data
-- compare data between 2 players (where my best openings line up with their worst)
+
+- compare data between 2 players (where my best openings line up with their worst, vice versa,  etc. )
 
 - add methods to Player Class
     - have .best, .worst, etc. return data rather than displaying data
@@ -44,6 +53,7 @@ from lichess.format import SINGLE_PGN
     - display a graph of advantage by move
     - find mistakes - moves where the advantage changed from one side to the other
     - make a list of mistakes for whole data set, or given ECO, or given game
+
 
 '''
 # Define global variables
