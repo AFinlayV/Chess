@@ -4,7 +4,18 @@ import pandas as pd
 import chess.pgn
 import lichess.api
 from lichess.format import SINGLE_PGN
+'''
+# TODO:
 
+- use arguments rather than hard coded constants
+- clean up Player.__init__
+- build class Openings
+    - return game board given an ECO code
+    - return player stats given player object and ECO code
+    - import W/L/D stats for
+
+
+'''
 # Define global variables
 USERNAME = 'AlexTheFifth'
 NUM_GAMES = 1000
@@ -103,7 +114,10 @@ class Player:
             .games - pychess object of all games Data
             .df - DataFrame with each game as a row
             .eco_lst - list of all ECO codes present in df
-            .eco_df - DataFrame of ECO statistics
+            .eco_df - DataFrame of ECO data with
+                opening names
+                board positions
+                move lists
         '''
         self.un = un
         self.num = num
@@ -230,6 +244,12 @@ class Player:
         user = self.user.iloc(0)[0][data_lst].T
         print(DELIMITER, 'Player data for {}'.format(self.un), DELIMITER, user)
 
+    def win_loss_draw(self, eco, side):
+        print('W/L/D for {}, {}, {}'.format(self.un, eco, side))
+        print(self.df[slef.df['ECO'] == eco])
+        
+
+
 
 
 class Openings:
@@ -274,9 +294,11 @@ def verbose(message, data):
         print('[{}]'.format(message))
 
 def run():
+    op = Openings(ECO_FILENAME)
     p1 = Player(USERNAME, NUM_GAMES, False)
-    p1.disp_user(USER_DATA)
-    p1.best_and_worst(5)
-    p1.most_used(10)
+    p1.
+    # p1.disp_user(USER_DATA)
+    # p1.best_and_worst(5)
+    # p1.most_used(10)
 
 run()
